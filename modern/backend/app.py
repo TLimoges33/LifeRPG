@@ -2,6 +2,7 @@ from fastapi import FastAPI, Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from . import models
 from .oauth import router as oauth_router
+from .auth import router as auth_router, get_current_user
 import os
 import requests
 import time
@@ -30,6 +31,7 @@ def hello():
     return {'message': 'Hello from LifeRPG modern backend (FastAPI)'}
 
 app.include_router(oauth_router, prefix='/api/v1')
+app.include_router(auth_router, prefix='/api/v1/auth')
 
 # Basic user routes (demo)
 @app.post('/api/v1/users')
@@ -73,6 +75,42 @@ def google_events(integration_id: int):
         if resp.status_code != 200:
             raise HTTPException(status_code=502, detail=f'google api error: {resp.status_code}')
         return resp.json()
+    finally:
+        db.close()
+
+
+@app.get('/api/v1/integrations/{integration_id}/events_preview')
+def events_preview(integration_id: int):
+    db = models.SessionLocal()
+    try:
+        integration = db.query(models.Integration).filter_by(id=integration_id).first()
+        if not integration:
+            raise HTTPException(status_code=404, detail='integration not found')
+        token_row = db.query(models.OAuthToken).filter_by(integration_id=integration_id).order_by(models.OAuthToken.id.desc()).first()
+        if not token_row:
+            raise HTTPException(status_code=404, detail='no token')
+        from .oauth import refresh_google_token_if_needed
+        refreshed = refresh_google_token_if_needed(token_row)
+        if refreshed:
+            token_row = refreshed
+        from .crypto import decrypt_text
+        access = decrypt_text(token_row.access_token)
+        if not access:
+            raise HTTPException(status_code=500, detail='unable to decrypt')
+        headers = {'Authorization': f'Bearer {access}'}
+        params = {'maxResults': 50, 'singleEvents': True, 'orderBy': 'startTime', 'timeMin': time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime())}
+        resp = requests.get('https://www.googleapis.com/calendar/v3/calendars/primary/events', headers=headers, params=params, timeout=10)
+        if resp.status_code != 200:
+            raise HTTPException(status_code=502, detail='google api error')
+        items = resp.json().get('items', [])
+        # Return light preview objects
+        preview = [{
+            'id': it.get('id'),
+            'summary': it.get('summary'),
+            'start': it.get('start'),
+            'end': it.get('end')
+        } for it in items]
+        return {'preview': preview}
     finally:
         db.close()
 

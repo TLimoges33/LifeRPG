@@ -30,6 +30,14 @@ export default function Integrations(){
       .finally(()=>setLoadingId(null))
   }
 
+  function previewEvents(integrationId){
+    fetch(`/api/v1/integrations/${integrationId}/events_preview`, {credentials:'include'})
+      .then(r=>r.json()).then(d=>{
+        setEvents(d)
+        setMsg('Preview loaded')
+      }).catch(()=>setMsg('Preview failed'))
+  }
+
   function removeIntegration(integrationId){
     if(!confirm('Remove integration?')) return
     setLoadingId(integrationId)
@@ -63,6 +71,7 @@ export default function Integrations(){
             <strong>{i.provider}</strong> — id: {i.id} — user: {i.user_id}
             <div style={{display:'inline-block', marginLeft:12}}>
               <button onClick={()=>fetchEvents(i.id)} disabled={loadingId===i.id} style={{marginRight:6}}>Fetch Events</button>
+              <button onClick={()=>previewEvents(i.id)} disabled={loadingId===i.id} style={{marginRight:6}}>Preview</button>
               <button onClick={()=>syncIntegration(i.id)} disabled={loadingId===i.id} style={{marginRight:6}}>Sync → Habits</button>
               <button onClick={()=>removeIntegration(i.id)} disabled={loadingId===i.id}>Remove</button>
             </div>
