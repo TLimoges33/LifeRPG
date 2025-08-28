@@ -71,18 +71,20 @@ async def google_callback(request: Request):
             db.commit()
             db.refresh(integration)
 
-        # Persist token (single latest token demo)
-        expires_at = None
-        if token.get('expires_in'):
-            expires_at = int(time.time()) + int(token.get('expires_in'))
+            # Persist token (single latest token demo). Encrypt tokens at rest.
+            from .crypto import encrypt_text
 
-        oauth_token = models.OAuthToken(
-            integration_id=integration.id,
-            access_token=token.get('access_token'),
-            refresh_token=token.get('refresh_token'),
-            scope=token.get('scope'),
-            expires_at=expires_at
-        )
+            expires_at = None
+            if token.get('expires_in'):
+                expires_at = int(time.time()) + int(token.get('expires_in'))
+
+            oauth_token = models.OAuthToken(
+                integration_id=integration.id,
+                access_token=encrypt_text(token.get('access_token') or ''),
+                refresh_token=encrypt_text(token.get('refresh_token') or ''),
+                scope=token.get('scope'),
+                expires_at=expires_at
+            )
         db.add(oauth_token)
         db.commit()
 

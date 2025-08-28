@@ -4,3 +4,4 @@ sqlalchemy
 authlib
 python-dotenv
 requests
+cryptography

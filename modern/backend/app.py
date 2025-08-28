@@ -57,7 +57,11 @@ def google_events(integration_id: int):
         if not token or not token.access_token:
             raise HTTPException(status_code=404, detail='no token found for integration')
 
-        headers = {'Authorization': f'Bearer {token.access_token}'}
+        from .crypto import decrypt_text
+        decrypted_access = decrypt_text(token.access_token)
+        if not decrypted_access:
+            raise HTTPException(status_code=500, detail='unable to decrypt access token')
+        headers = {'Authorization': f'Bearer {decrypted_access}'}
         params = {'maxResults': 10, 'singleEvents': True, 'orderBy': 'startTime', 'timeMin': time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime())}
         resp = requests.get('https://www.googleapis.com/calendar/v3/calendars/primary/events', headers=headers, params=params, timeout=10)
         if resp.status_code != 200:
