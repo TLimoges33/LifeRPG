@@ -3,6 +3,8 @@ from cryptography.fernet import Fernet, InvalidToken
 
 KEY_ENV = 'LIFERPG_DATA_KEY'
 FALLBACK_KEY_PATH = os.path.join(os.path.dirname(__file__), '.dev_liferpg_key')
+KMS_WRAPPED_PATH = os.path.join(os.path.dirname(__file__), '.wrapped_data_key')
+KMS_KEY_ID_ENV = 'LIFERPG_KMS_KEY_ID'
 
 
 def _load_key_from_env():
@@ -25,6 +27,51 @@ def _load_or_create_fallback_key():
         with os.fdopen(fd, 'wb') as f:
             f.write(key)
         return key
+    except Exception:
+        return None
+
+
+def _load_key_from_kms():
+    """Optional: use AWS KMS to manage a wrapped data key for envelope encryption.
+
+    If env var LIFERPG_KMS_KEY_ID is set and boto3 is available, this will either:
+    - read an existing wrapped key from KMS_WRAPPED_PATH and call KMS Decrypt to obtain the plaintext data key,
+    - or call KMS GenerateDataKey to produce and persist a wrapped key locally (development convenience).
+    """
+    key_id = os.getenv(KMS_KEY_ID_ENV)
+    if not key_id:
+        return None
+    try:
+        import boto3
+        from botocore.exceptions import BotoCoreError, ClientError
+    except Exception:
+        return None
+
+    kms = boto3.client('kms')
+    # If wrapped key exists, decrypt it
+    if os.path.exists(KMS_WRAPPED_PATH):
+        try:
+            with open(KMS_WRAPPED_PATH, 'rb') as f:
+                blob = f.read()
+            resp = kms.decrypt(CiphertextBlob=blob)
+            return resp['Plaintext']
+        except Exception:
+            return None
+
+    # Otherwise, generate a new data key and store the wrapped blob
+    try:
+        resp = kms.generate_data_key(KeyId=key_id, KeySpec='AES_256')
+        plaintext = resp['Plaintext']
+        ciphertext = resp['CiphertextBlob']
+        # persist wrapped key
+        with open(KMS_WRAPPED_PATH, 'wb') as f:
+            f.write(ciphertext)
+        # restrict perms
+        try:
+            os.chmod(KMS_WRAPPED_PATH, 0o600)
+        except Exception:
+            pass
+        return plaintext
     except Exception:
         return None
 

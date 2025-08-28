@@ -56,6 +56,11 @@ def google_events(integration_id: int):
         token = db.query(models.OAuthToken).filter_by(integration_id=integration_id).order_by(models.OAuthToken.id.desc()).first()
         if not token or not token.access_token:
             raise HTTPException(status_code=404, detail='no token found for integration')
+        # Try to refresh token if needed (refresh flow is in oauth module)
+        from .oauth import refresh_google_token_if_needed
+        refreshed = refresh_google_token_if_needed(token)
+        if refreshed:
+            token = refreshed
 
         from .crypto import decrypt_text
         decrypted_access = decrypt_text(token.access_token)

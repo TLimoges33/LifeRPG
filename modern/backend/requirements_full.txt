@@ -5,3 +5,4 @@ authlib
 python-dotenv
 requests
 cryptography
+boto3

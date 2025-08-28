@@ -4,6 +4,8 @@ from fastapi import APIRouter, Request
 from starlette.responses import RedirectResponse
 from authlib.integrations.starlette_client import OAuth
 from . import models
+import requests
+from typing import Optional
 
 router = APIRouter()
 oauth = OAuth()
@@ -78,7 +80,7 @@ async def google_callback(request: Request):
             if token.get('expires_in'):
                 expires_at = int(time.time()) + int(token.get('expires_in'))
 
-            oauth_token = models.OAuthToken(
+        oauth_token = models.OAuthToken(
                 integration_id=integration.id,
                 access_token=encrypt_text(token.get('access_token') or ''),
                 refresh_token=encrypt_text(token.get('refresh_token') or ''),
@@ -91,3 +93,64 @@ async def google_callback(request: Request):
         return {'ok': True, 'integration_id': integration.id, 'token_saved': bool(oauth_token.id)}
     finally:
         db.close()
+
+
+def _decrypt_token(db_token_encrypted: str) -> str:
+    from .crypto import decrypt_text
+    return decrypt_text(db_token_encrypted)
+
+
+def refresh_google_token_if_needed(oauth_token_row: models.OAuthToken) -> Optional[models.OAuthToken]:
+    """Refresh Google's access token using refresh_token if expired or near expiry.
+
+    Returns updated OAuthToken row (new DB row) or None on failure.
+    """
+    # If not expired, return the same
+    now = int(time.time())
+    if oauth_token_row.expires_at and oauth_token_row.expires_at > now + 30:
+        return oauth_token_row
+
+    refresh_token = _decrypt_token(oauth_token_row.refresh_token)
+    if not refresh_token:
+        return None
+
+    # Use Google's token endpoint to refresh
+    token_url = 'https://oauth2.googleapis.com/token'
+    client_id = os.getenv('GOOGLE_CLIENT_ID')
+    client_secret = os.getenv('GOOGLE_CLIENT_SECRET')
+    if not client_id or not client_secret:
+        return None
+
+    data = {
+        'client_id': client_id,
+        'client_secret': client_secret,
+        'grant_type': 'refresh_token',
+        'refresh_token': refresh_token
+    }
+    try:
+        resp = requests.post(token_url, data=data, timeout=10)
+        if resp.status_code != 200:
+            return None
+        t = resp.json()
+        # Persist new token
+        from .crypto import encrypt_text
+        db = models.SessionLocal()
+        try:
+            new_expires = None
+            if t.get('expires_in'):
+                new_expires = int(time.time()) + int(t.get('expires_in'))
+            new_row = models.OAuthToken(
+                integration_id=oauth_token_row.integration_id,
+                access_token=encrypt_text(t.get('access_token') or ''),
+                refresh_token=encrypt_text(t.get('refresh_token') or refresh_token),
+                scope=t.get('scope') or oauth_token_row.scope,
+                expires_at=new_expires
+            )
+            db.add(new_row)
+            db.commit()
+            db.refresh(new_row)
+            return new_row
+        finally:
+            db.close()
+    except Exception:
+        return None
