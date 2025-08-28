@@ -6,6 +6,8 @@ export default function Integrations(){
   const [integrations, setIntegrations] = useState([])
   const [events, setEvents] = useState(null)
   const [userId] = useState(1)
+  const [msg, setMsg] = useState(null)
+  const [loadingId, setLoadingId] = useState(null)
 
   useEffect(()=>{
     API(`/api/v1/users/${userId}/integrations`).then(d=>setIntegrations(d)).catch(()=>setIntegrations([]))
@@ -17,7 +19,37 @@ export default function Integrations(){
   }
 
   function fetchEvents(integrationId){
-    API(`/api/v1/integrations/${integrationId}/google/events`).then(d=>setEvents(d)).catch(e=>setEvents({error: String(e)}))
+    setLoadingId(integrationId)
+    fetch(`/api/v1/integrations/${integrationId}/google/events`, {credentials:'include'})
+      .then(r=>r.json())
+      .then(d=>{
+        setEvents(d)
+        setMsg('Fetched events')
+      })
+      .catch(e=>setEvents({error: String(e)}))
+      .finally(()=>setLoadingId(null))
+  }
+
+  function removeIntegration(integrationId){
+    if(!confirm('Remove integration?')) return
+    setLoadingId(integrationId)
+    fetch(`/api/v1/integrations/${integrationId}`, {method: 'DELETE', credentials: 'include'})
+      .then(r=>r.json())
+      .then(d=>{
+        setMsg('Integration removed')
+        setIntegrations(integrations.filter(i=>i.id !== integrationId))
+      })
+      .catch(e=>setMsg('Failed to remove'))
+      .finally(()=>setLoadingId(null))
+  }
+
+  function syncIntegration(integrationId){
+    setLoadingId(integrationId)
+    fetch(`/api/v1/integrations/${integrationId}/sync_to_habits`, {method:'POST', credentials:'include'})
+      .then(r=>r.json())
+      .then(d=>setMsg(`Synced ${d.count || 0} items`))
+      .catch(e=>setMsg('Sync failed'))
+      .finally(()=>setLoadingId(null))
   }
 
   return (
@@ -27,11 +59,17 @@ export default function Integrations(){
       <h3>Your Integrations</h3>
       <ul>
         {integrations && integrations.length ? integrations.map(i=> (
-          <li key={i.id}>
-            {i.provider} — id: {i.id} — user: {i.user_id} <button style={{marginLeft:8}} onClick={()=>fetchEvents(i.id)}>Fetch Events</button>
+          <li key={i.id} style={{marginBottom:8}}>
+            <strong>{i.provider}</strong> — id: {i.id} — user: {i.user_id}
+            <div style={{display:'inline-block', marginLeft:12}}>
+              <button onClick={()=>fetchEvents(i.id)} disabled={loadingId===i.id} style={{marginRight:6}}>Fetch Events</button>
+              <button onClick={()=>syncIntegration(i.id)} disabled={loadingId===i.id} style={{marginRight:6}}>Sync → Habits</button>
+              <button onClick={()=>removeIntegration(i.id)} disabled={loadingId===i.id}>Remove</button>
+            </div>
           </li>
         )): <li>No integrations</li>}
       </ul>
+      {msg && <div style={{marginTop:8, color:'#0366d6'}}>{msg}</div>}
       <h3>Events</h3>
       <pre style={{whiteSpace:'pre-wrap',background:'#f6f6f6',padding:10}}>{events? JSON.stringify(events, null, 2): 'No events fetched'}</pre>
     </div>

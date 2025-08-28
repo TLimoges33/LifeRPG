@@ -1,5 +1,6 @@
 import React from 'react'
 import Integrations from './Integrations'
+import Guilds from './Guilds'
 
 export default function App(){
   return (
@@ -7,6 +8,7 @@ export default function App(){
       <h1>LifeRPG Modern</h1>
       <p>Welcome — frontend scaffold. Connect to backend at <code>/api/v1</code>.</p>
       <Integrations />
+  <Guilds />
     </div>
   )
 }
