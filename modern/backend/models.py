@@ -102,6 +102,23 @@ class ChangeLog(Base):
     created_at = Column(DateTime, server_default=func.current_timestamp())
 
 
+class Guild(Base):
+    __tablename__ = 'guilds'
+    id = Column(Integer, primary_key=True)
+    name = Column(String, nullable=False)
+    description = Column(Text)
+    owner_id = Column(Integer, ForeignKey('users.id'))
+    created_at = Column(DateTime, server_default=func.current_timestamp())
+
+
+class GuildMember(Base):
+    __tablename__ = 'guild_members'
+    id = Column(Integer, primary_key=True)
+    guild_id = Column(Integer, ForeignKey('guilds.id'))
+    user_id = Column(Integer, ForeignKey('users.id'))
+    role = Column(String, default='member')
+
+
 def init_db():
     Base.metadata.create_all(bind=engine)
 
