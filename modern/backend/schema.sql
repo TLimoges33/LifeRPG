@@ -1,0 +1,85 @@
+-- LifeRPG DB schema (initial draft)
+
+PRAGMA foreign_keys = ON;
+
+CREATE TABLE users (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  email TEXT UNIQUE NOT NULL,
+  password_hash TEXT,
+  display_name TEXT,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE profiles (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  key TEXT NOT NULL,
+  value TEXT,
+  UNIQUE(user_id, key)
+);
+
+CREATE TABLE projects (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  title TEXT NOT NULL,
+  description TEXT,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE habits (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  project_id INTEGER REFERENCES projects(id) ON DELETE SET NULL,
+  user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  title TEXT NOT NULL,
+  notes TEXT,
+  cadence TEXT, -- e.g., daily, weekly
+  difficulty INTEGER DEFAULT 1,
+  xp_reward INTEGER DEFAULT 10,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE logs (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  habit_id INTEGER REFERENCES habits(id) ON DELETE CASCADE,
+  user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  action TEXT,
+  timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE achievements (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  name TEXT NOT NULL,
+  description TEXT,
+  earned_at DATETIME
+);
+
+CREATE TABLE integrations (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  provider TEXT NOT NULL,
+  external_id TEXT,
+  config TEXT, -- JSON blob for adapter config
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE oauth_tokens (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  integration_id INTEGER REFERENCES integrations(id) ON DELETE CASCADE,
+  access_token TEXT,
+  refresh_token TEXT,
+  scope TEXT,
+  expires_at INTEGER
+);
+
+CREATE TABLE change_log (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  user_id INTEGER,
+  entity TEXT,
+  entity_id INTEGER,
+  action TEXT,
+  payload TEXT,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
