@@ -6,3 +6,6 @@ python-dotenv
 requests
 cryptography
 boto3
+pytest
+httpx
+requests

@@ -18,6 +18,18 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
+# HTTPS enforcement middleware (for production behind a proxy, check X-Forwarded-Proto)
+@app.middleware('http')
+async def https_redirect(request, call_next):
+    if os.getenv('FORCE_HTTPS', 'false').lower() == 'true':
+        proto = request.headers.get('x-forwarded-proto', request.url.scheme)
+        if proto != 'https':
+            from starlette.responses import RedirectResponse
+            url = request.url.replace(scheme='https')
+            return RedirectResponse(str(url))
+    return await call_next(request)
+
 @app.on_event('startup')
 def startup_event():
     models.init_db()
@@ -198,13 +210,16 @@ def list_integrations():
 
 
 @app.delete('/api/v1/integrations/{integration_id}')
-def delete_integration(integration_id: int):
+def delete_integration(integration_id: int, request=None):
     db = models.SessionLocal()
     try:
         row = db.query(models.Integration).filter_by(id=integration_id).first()
         if not row:
             raise HTTPException(status_code=404, detail='integration not found')
-        db.delete(row)
+    # require owner or admin
+    from .rbac import require_owner_or_admin
+    require_owner_or_admin(row.user_id)(request)
+    db.delete(row)
         db.commit()
         return {'ok': True}
     finally:
@@ -223,7 +238,10 @@ def sync_integration_to_habits(integration_id: int, payload: dict = Body({})):
         if not integration:
             raise HTTPException(status_code=404, detail='integration not found')
 
-        # Fetch events via existing events endpoint logic
+    # require owner or admin
+    from .rbac import require_owner_or_admin
+    require_owner_or_admin(integration.user_id)(None)
+    # Fetch events via existing events endpoint logic
         # Reuse token refresh + decrypt logic from oauth module
         token_row = db.query(models.OAuthToken).filter_by(integration_id=integration_id).order_by(models.OAuthToken.id.desc()).first()
         if not token_row:
