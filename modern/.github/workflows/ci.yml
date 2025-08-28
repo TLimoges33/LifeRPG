@@ -1,0 +1,11 @@
+name: CI
+on: [push, pull_request]
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check Python syntax
+        run: python -m py_compile modern/backend/server.py
+      - name: Check frontend package.json
+        run: cat modern/frontend/package.json

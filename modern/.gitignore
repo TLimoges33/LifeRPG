@@ -1,0 +1,11 @@
+# modern scaffold ignore
+node_modules/
+venv/
+.env
+dist/
+.idea/
+.DS_Store
+__pycache__/
+*.pyc
+.env.local
+/*.log

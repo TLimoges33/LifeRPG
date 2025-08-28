@@ -1,0 +1,9 @@
+{
+  "name": "LifeRPG Modern",
+  "short_name": "LifeRPG",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "description": "A modern, cross-platform habit-leveling app.",
+  "icons": []
+}
