@@ -45,6 +45,37 @@ def hello():
 app.include_router(oauth_router, prefix='/api/v1')
 app.include_router(auth_router, prefix='/api/v1/auth')
 
+
+from .rbac import require_admin
+
+
+@app.get('/api/v1/admin/users')
+def admin_list_users(admin_user=Depends(require_admin)):
+    # placeholder; will be replaced with require_admin dependency
+    db = models.SessionLocal()
+    try:
+        rows = db.query(models.User).all()
+        return [{'id': r.id, 'email': r.email, 'role': r.role} for r in rows]
+    finally:
+        db.close()
+
+
+@app.post('/api/v1/admin/users/{user_id}/role')
+def admin_set_role(user_id: int, payload: dict, admin_user=Depends(require_admin)):
+    role = payload.get('role')
+    if role not in ['user', 'moderator', 'admin']:
+        raise HTTPException(status_code=400, detail='invalid role')
+    db = models.SessionLocal()
+    try:
+        user = db.query(models.User).filter_by(id=user_id).first()
+        if not user:
+            raise HTTPException(status_code=404, detail='user not found')
+        user.role = role
+        db.commit()
+        return {'id': user.id, 'role': user.role}
+    finally:
+        db.close()
+
 # Basic user routes (demo)
 @app.post('/api/v1/users')
 def create_user(payload: dict):

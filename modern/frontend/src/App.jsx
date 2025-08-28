@@ -2,6 +2,7 @@ import React from 'react'
 import Integrations from './Integrations'
 import Guilds from './Guilds'
 import Login from './Login'
+import AdminUsers from './AdminUsers'
 
 export default function App() {
     return (
@@ -11,6 +12,7 @@ export default function App() {
             <Login />
             <Integrations />
             <Guilds />
+            <AdminUsers />
         </div>
     )
 }
