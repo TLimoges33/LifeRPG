@@ -1,0 +1,43 @@
+{
+  "name": "@liferpg/mobile",
+  "version": "1.0.0",
+  "description": "This is a lightweight scaffold to kickstart a React Native app using Expo. It’s intentionally minimal: folders, placeholders, and guidance to get you moving fast.",
+  "main": "node_modules/expo/AppEntry.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "expo start",
+    "start:tunnel": "expo start --tunnel",
+    "android": "expo run:android",
+    "lint": "eslint .",
+    "eas:build:android:dev": "eas build -p android --profile development --non-interactive"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "private": "true",
+  "devDependencies": {
+    "@react-native/eslint-config": "^0.81.1",
+    "@types/react": "^19.1.12",
+    "@types/react-native": "^0.73.0",
+    "eslint": "^8.57.1",
+    "eas-cli": "^14.1.0",
+    "typescript": "^5.9.2"
+  },
+  "dependencies": {
+    "@react-navigation/native": "^7.1.17",
+    "@react-navigation/native-stack": "^7.3.25",
+    "@react-navigation/bottom-tabs": "^7.2.9",
+    "expo": "^53.0.20",
+    "expo-background-fetch": "^13.1.6",
+    "expo-secure-store": "^14.2.3",
+    "expo-sqlite": "^15.2.14",
+    "expo-task-manager": "^13.1.6",
+    "react-native-app-auth": "^8.0.3",
+    "react-native-safe-area-context": "5.4.0",
+    "react-native-screens": "~4.11.1",
+    "react": "19.0.0",
+    "react-native": "0.79.5"
+  },
+  "react-native": "0.76.0",
+  "react": "18.2.0"
+}

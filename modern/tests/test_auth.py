@@ -1,23 +1,23 @@
 import pytest
-from fastapi.testclient import TestClient
 from modern.backend.app import app
 
-client = TestClient(app)
 
-def test_signup_and_login():
-    resp = client.post('/api/v1/auth/signup', json={'email':'test@example.com','password':'secret'})
+def test_signup_and_login(client):
+    resp = client.post('/api/v1/auth/signup', json={'email':'user1@test','password':'secret'})
     assert resp.status_code == 200
-    resp = client.post('/api/v1/auth/login', json={'email':'test@example.com','password':'secret'})
+    resp = client.post('/api/v1/auth/login', json={'email':'user1@test','password':'secret'})
     assert resp.status_code == 200
     assert 'session' in resp.cookies
 
 
-def test_admin_set_role():
-    # signup admin user
-    client.post('/api/v1/auth/signup', json={'email':'admin@example.com','password':'secret'})
-    # set role by calling admin API directly (no auth in this simple test runner)
-    # In a full test we'd log in as admin and use cookie; keep simple here
-    resp = client.post('/api/v1/admin/users/1/role', json={'role':'admin'})
-    # This may be protected in runtime; just assert response code is 200 or 401 depending on environment
-    assert resp.status_code in (200,401,403)
-*** End Patch
+def test_admin_set_role(client):
+    # Login as admin (created in fixture)
+    resp = client.post('/api/v1/auth/login', json={'email':'admin@test','password':'pass'})
+    assert resp.status_code == 200
+    # Set role of a user (create user first)
+    r = client.post('/api/v1/auth/signup', json={'email':'tochange@test','password':'p'})
+    assert r.status_code == 200
+    # As admin, set role
+    resp = client.post('/api/v1/admin/users/2/role', json={'role':'moderator'})
+    assert resp.status_code == 200
+    assert resp.json().get('role') == 'moderator'

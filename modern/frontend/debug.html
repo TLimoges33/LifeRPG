@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug - The Wizard's Grimoire</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background: #0f0f23;
+            color: #e0e0e0;
+        }
+
+        .debug-info {
+            background: #1a1a2e;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+            border: 1px solid #7c3aed;
+        }
+
+        .error {
+            background: #2d1b69;
+            color: #ff6b6b;
+        }
+
+        .success {
+            background: #1a4532;
+            color: #51cf66;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>🧙‍♂️ The Wizard's Grimoire - Debug Portal</h1>
+
+    <div class="debug-info">
+        <h3>🔍 System Status</h3>
+        <p id="status">Checking magical systems...</p>
+    </div>
+
+    <div class="debug-info">
+        <h3>🌐 API Connection Test</h3>
+        <p id="api-status">Testing connection to backend...</p>
+        <pre id="api-response"></pre>
+    </div>
+
+    <div class="debug-info">
+        <h3>📜 Console Output</h3>
+        <div id="console-output"></div>
+    </div>
+
+    <script>
+        const apiStatus = document.getElementById('api-status');
+        const apiResponse = document.getElementById('api-response');
+        const consoleOutput = document.getElementById('console-output');
+        const status = document.getElementById('status');
+
+        // Capture console logs
+        const originalLog = console.log;
+        const originalError = console.error;
+        const originalWarn = console.warn;
+
+        function addToConsole(level, message) {
+            const div = document.createElement('div');
+            div.textContent = `[${level}] ${new Date().toLocaleTimeString()}: ${message}`;
+            div.style.margin = '5px 0';
+            div.style.color = level === 'ERROR' ? '#ff6b6b' : level === 'WARN' ? '#ffd43b' : '#51cf66';
+            consoleOutput.appendChild(div);
+        }
+
+        console.log = function (...args) {
+            addToConsole('LOG', args.join(' '));
+            originalLog.apply(console, args);
+        };
+
+        console.error = function (...args) {
+            addToConsole('ERROR', args.join(' '));
+            originalError.apply(console, args);
+        };
+
+        console.warn = function (...args) {
+            addToConsole('WARN', args.join(' '));
+            originalWarn.apply(console, args);
+        };
+
+        // Window error handler
+        window.addEventListener('error', function (e) {
+            addToConsole('ERROR', `JavaScript Error: ${e.message} at ${e.filename}:${e.lineno}`);
+        });
+
+        status.textContent = "✅ Debug system initialized";
+
+        // Test API connection
+        async function testAPI() {
+            try {
+                console.log('Testing API connection...');
+                const response = await fetch('/api/v1/health', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const data = await response.json();
+                apiStatus.textContent = '✅ API Connection Successful';
+                apiStatus.className = 'success';
+                apiResponse.textContent = JSON.stringify(data, null, 2);
+                console.log('API Response:', data);
+
+            } catch (error) {
+                apiStatus.textContent = '❌ API Connection Failed';
+                apiStatus.className = 'error';
+                apiResponse.textContent = `Error: ${error.message}`;
+                console.error('API Error:', error);
+            }
+        }
+
+        // Test React imports
+        async function testReactImports() {
+            try {
+                console.log('Testing React imports...');
+
+                // Try to load React
+                if (typeof React === 'undefined') {
+                    console.log('React not found globally, this is normal for Vite');
+                }
+
+                console.log('Import test completed');
+
+            } catch (error) {
+                console.error('Import test failed:', error);
+            }
+        }
+
+        // Run tests
+        testAPI();
+        testReactImports();
+
+        console.log('🧙‍♂️ The Wizard\'s Grimoire Debug Portal is ready!');
+    </script>
+</body>
+
+</html>

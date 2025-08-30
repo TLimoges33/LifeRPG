@@ -1,0 +1,295 @@
+name: DB Migrations
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+  workflow_dispatch: {}
+
+jobs:
+  alembic-sqlite:
+    runs-on: ubuntu-latest
+    concurrency:
+      group: alembic-sqlite-${{ github.ref }}-${{ matrix.python-version }}
+      cancel-in-progress: true
+    strategy:
+      matrix:
+        python-version: ["3.10", "3.11", "3.12"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Cache pyc
+        uses: actions/cache@v4
+        with:
+          path: |
+            **/__pycache__
+          key: ${{ runner.os }}-pyc-${{ github.sha }}
+      - name: Cache pip
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ matrix.python-version }}-${{ hashFiles('**/requirements*.txt', 'poetry.lock', 'Pipfile.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-${{ matrix.python-version }}-
+      - name: Install deps
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r modern/backend/requirements_full.txt alembic
+      - name: Stamp sqlite (dev default)
+        env:
+          DATABASE_URL: sqlite:///./modern_dev.db
+        run: |
+          export PYTHONPATH=$(pwd)
+          alembic -c modern/alembic.ini stamp head
+      - name: Alembic upgrade sqlite
+        env:
+          DATABASE_URL: sqlite:///./modern_dev.db
+        run: |
+          export PYTHONPATH=$(pwd)
+          alembic -c modern/alembic.ini upgrade head
+
+  alembic-postgres:
+    runs-on: ubuntu-latest
+    concurrency:
+      group: alembic-postgres-${{ github.ref }}-${{ matrix.python-version }}
+      cancel-in-progress: true
+    strategy:
+      matrix:
+        python-version: ["3.10", "3.11", "3.12"]
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: liferpg
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="bash -lc 'cat < /dev/null > /dev/tcp/127.0.0.1/5432'" \
+          --health-interval=10s \
+          --health-timeout=5s \
+          --health-retries=10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Cache pyc
+        uses: actions/cache@v4
+        with:
+          path: |
+            **/__pycache__
+          key: ${{ runner.os }}-pyc-${{ github.sha }}
+      - name: Cache pip
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ matrix.python-version }}-${{ hashFiles('**/requirements*.txt', 'poetry.lock', 'Pipfile.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-${{ matrix.python-version }}-
+      - name: Install deps
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r modern/backend/requirements_full.txt alembic
+      - name: Wait for Postgres
+        run: |
+          python - <<'PY'
+          import socket, time, sys
+          host, port = '127.0.0.1', 5432
+          for i in range(60):
+              try:
+                  with socket.create_connection((host, port), timeout=1):
+                      sys.exit(0)
+              except OSError:
+                  time.sleep(1)
+          print('Postgres not ready', file=sys.stderr)
+          sys.exit(1)
+          PY
+      - name: Stamp postgres
+        env:
+          DATABASE_URL: postgresql+psycopg2://postgres:postgres@localhost:5432/liferpg
+        run: |
+          export PYTHONPATH=$(pwd)
+          alembic -c modern/alembic.ini stamp head
+      - name: Alembic upgrade postgres
+        env:
+          DATABASE_URL: postgresql+psycopg2://postgres:postgres@localhost:5432/liferpg
+        run: |
+          export PYTHONPATH=$(pwd)
+          alembic -c modern/alembic.ini upgrade head
+
+  smoke-api:
+    runs-on: ubuntu-latest
+    needs: alembic-sqlite
+    concurrency:
+      group: smoke-api-${{ github.ref }}
+      cancel-in-progress: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Cache pyc
+        uses: actions/cache@v4
+        with:
+          path: |
+            **/__pycache__
+          key: ${{ runner.os }}-pyc-${{ github.sha }}
+      - name: Cache pip
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-3.12-${{ hashFiles('**/requirements*.txt', 'poetry.lock', 'Pipfile.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-3.12-
+      - name: Install deps
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r modern/backend/requirements_full.txt uvicorn
+      - name: Upgrade DB (sqlite)
+        env:
+          DATABASE_URL: sqlite:///./modern_dev.db
+        run: |
+          export PYTHONPATH=$(pwd)
+          alembic -c modern/alembic.ini upgrade head
+      - name: Start API and smoke test
+        env:
+          DATABASE_URL: sqlite:///./modern_dev.db
+        run: |
+          export PYTHONPATH=$(pwd)
+          (python -m uvicorn modern.backend.app:app --host 127.0.0.1 --port 8000 & echo $! > uvicorn.pid)
+          # wait for port 8000
+          python - <<'PY'
+          import socket, time, sys
+          for i in range(60):
+              try:
+                  with socket.create_connection(('127.0.0.1',8000), timeout=1):
+                      sys.exit(0)
+              except OSError:
+                  time.sleep(1)
+          print('API not ready', file=sys.stderr)
+          sys.exit(1)
+          PY
+          curl -fsS http://127.0.0.1:8000/health
+          curl -fsS http://127.0.0.1:8000/api/v1/hello
+      - name: Stop API
+        if: always()
+        run: |
+          if [ -f uvicorn.pid ]; then kill $(cat uvicorn.pid) || true; fi
+  drift-check:
+    runs-on: ubuntu-latest
+    concurrency:
+      group: drift-check-${{ github.ref }}
+      cancel-in-progress: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Cache pyc
+        uses: actions/cache@v4
+        with:
+          path: |
+            **/__pycache__
+          key: ${{ runner.os }}-pyc-${{ github.sha }}
+  - name: Install deps
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r modern/backend/requirements_full.txt alembic
+      - name: Run schema drift check
+        env:
+          DATABASE_URL: sqlite:///./modern_dev.db
+        run: |
+          export PYTHONPATH=$(pwd)
+          python scripts/alembic_check.py
+
+  smoke-api-postgres:
+    runs-on: ubuntu-latest
+    needs: alembic-postgres
+    concurrency:
+      group: smoke-api-postgres-${{ github.ref }}
+      cancel-in-progress: true
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: liferpg
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="bash -lc 'cat < /dev/null > /dev/tcp/127.0.0.1/5432'" \
+          --health-interval=10s \
+          --health-timeout=5s \
+          --health-retries=10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Cache pyc
+        uses: actions/cache@v4
+        with:
+          path: |
+            **/__pycache__
+          key: ${{ runner.os }}-pyc-${{ github.sha }}
+      - name: Cache pip
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-3.12-${{ hashFiles('**/requirements*.txt', 'poetry.lock', 'Pipfile.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-3.12-
+      - name: Install deps
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r modern/backend/requirements_full.txt uvicorn alembic
+      - name: Wait for Postgres
+        run: |
+          python - <<'PY'
+          import socket, time, sys
+          host, port = '127.0.0.1', 5432
+          for i in range(60):
+              try:
+                  with socket.create_connection((host, port), timeout=1):
+                      sys.exit(0)
+              except OSError:
+                  time.sleep(1)
+          print('Postgres not ready', file=sys.stderr)
+          sys.exit(1)
+          PY
+      - name: Upgrade DB (postgres)
+        env:
+          DATABASE_URL: postgresql+psycopg2://postgres:postgres@localhost:5432/liferpg
+        run: |
+          export PYTHONPATH=$(pwd)
+          alembic -c modern/alembic.ini upgrade head
+      - name: Start API and smoke test (postgres)
+        env:
+          DATABASE_URL: postgresql+psycopg2://postgres:postgres@localhost:5432/liferpg
+        run: |
+          export PYTHONPATH=$(pwd)
+          (python -m uvicorn modern.backend.app:app --host 127.0.0.1 --port 8000 & echo $! > uvicorn.pid)
+          # wait for port 8000
+          python - <<'PY'
+          import socket, time, sys
+          for i in range(60):
+              try:
+                  with socket.create_connection(('127.0.0.1',8000), timeout=1):
+                      sys.exit(0)
+              except OSError:
+                  time.sleep(1)
+          print('API not ready', file=sys.stderr)
+          sys.exit(1)
+          PY
+          curl -fsS http://127.0.0.1:8000/health
+          curl -fsS http://127.0.0.1:8000/api/v1/hello
+      - name: Stop API
+        if: always()
+        run: |
+          if [ -f uvicorn.pid ]; then kill $(cat uvicorn.pid) || true; fi

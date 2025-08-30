@@ -1,8 +1,66 @@
 version: '3.8'
 services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: liferpg
+      POSTGRES_PASSWORD: liferpg
+      POSTGRES_DB: liferpg
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD", "bash", "-lc", "cat < /dev/tcp/127.0.0.1/5432"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
   backend:
     build:
-      context: .
-      dockerfile: Dockerfile.backend
+      context: ..
+      dockerfile: modern/backend/Dockerfile
+    environment:
+      DATABASE_URL: postgresql+psycopg2://liferpg:liferpg@db:5432/liferpg
+      FRONTEND_ORIGIN: http://localhost:5173
+      CSRF_ENABLE: "true"
+      COOKIE_SECURE: "false"
+      COOKIE_SAMESITE: lax
+      REDIS_URL: redis://redis:6379/0
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
     ports:
       - "8000:8000"
+
+  worker:
+    build:
+      context: ..
+      dockerfile: modern/backend/Dockerfile
+    environment:
+      DATABASE_URL: postgresql+psycopg2://liferpg:liferpg@db:5432/liferpg
+      REDIS_URL: redis://redis:6379/0
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    command: ["bash","-lc","rq worker -u $REDIS_URL default"]
+
+  frontend:
+    build:
+      context: ..
+    
+      dockerfile: modern/frontend/Dockerfile
+    ports:
+      - "5173:5173"

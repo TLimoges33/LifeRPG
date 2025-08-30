@@ -1,25 +1,35 @@
 import React, { useState } from 'react'
+import { useAuth } from './AuthContext'
 
 export default function Login() {
     const [email, setEmail] = useState('')
     const [pw, setPw] = useState('')
     const [msg, setMsg] = useState(null)
+    const { login, signup, loading, error } = useAuth()
 
-    function submit(e) {
+    async function doLogin(e) {
         e.preventDefault()
-        fetch('/api/v1/auth/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, password: pw }), credentials: 'include' })
-            .then(r => r.json()).then(() => setMsg('Logged in')).catch(() => setMsg('Login failed'))
+        try { await login(email, pw); setMsg('Logged in') } catch { setMsg('Login failed') }
+    }
+
+    async function doSignup(e) {
+        e.preventDefault()
+        try { await signup(email, pw); setMsg('Signed up') } catch { setMsg('Signup failed') }
     }
 
     return (
         <div style={{ marginTop: 20 }}>
-            <h2>Login</h2>
-            <form onSubmit={submit}>
+            <h2>Login / Signup</h2>
+            <form onSubmit={doLogin}>
                 <div><input placeholder="email" value={email} onChange={e => setEmail(e.target.value)} /></div>
                 <div><input placeholder="password" type="password" value={pw} onChange={e => setPw(e.target.value)} /></div>
-                <button type="submit">Login</button>
+                <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
+                    <button type="submit" disabled={loading}>Login</button>
+                    <button onClick={doSignup} disabled={loading}>Signup</button>
+                </div>
             </form>
             {msg && <div style={{ marginTop: 8 }}>{msg}</div>}
+            {error && <div style={{ marginTop: 8, color: 'crimson' }}>{error}</div>}
         </div>
     )
 }

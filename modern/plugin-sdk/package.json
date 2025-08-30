@@ -1,0 +1,27 @@
+{
+  "name": "@liferpg/plugin-sdk",
+  "version": "1.0.0",
+  "description": "LifeRPG Plugin SDK for AssemblyScript",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "asc assembly/index.ts --target release",
+    "test": "node tests"
+  },
+  "keywords": [
+    "liferpg",
+    "plugin",
+    "wasm",
+    "assemblyscript"
+  ],
+  "author": "LifeRPG Team",
+  "license": "MIT",
+  "dependencies": {
+    "assemblyscript": "^0.27.0"
+  },
+  "files": [
+    "dist",
+    "assembly",
+    "README.md"
+  ]
+}

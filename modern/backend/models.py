@@ -1,9 +1,10 @@
 from sqlalchemy import (
-    Column, Integer, String, Text, DateTime, ForeignKey, create_engine, func
+    Column, Integer, String, Text, DateTime, ForeignKey, create_engine, func, UniqueConstraint
 )
-from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import declarative_base
 from sqlalchemy.orm import relationship, sessionmaker
 import os
+from datetime import datetime
 
 Base = declarative_base()
 DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./modern_dev.db")
@@ -17,6 +18,9 @@ class User(Base):
     password_hash = Column(String)
     role = Column(String, default='user')
     display_name = Column(String)
+    totp_secret = Column(String)  # base32 secret (encrypted at rest optional)
+    totp_enabled = Column(Integer, default=0)  # 0/1
+    recovery_codes = Column(Text)  # newline-separated bcrypt hashes
     created_at = Column(DateTime, server_default=func.current_timestamp())
     updated_at = Column(DateTime, server_default=func.current_timestamp(), onupdate=func.current_timestamp())
 
@@ -54,6 +58,9 @@ class Habit(Base):
     cadence = Column(String)
     difficulty = Column(Integer, default=1)
     xp_reward = Column(Integer, default=10)
+    status = Column(String, default='active')  # active|completed|archived
+    due_date = Column(DateTime)
+    labels = Column(Text)  # JSON list of labels
     created_at = Column(DateTime, server_default=func.current_timestamp())
 
     user = relationship("User", back_populates="habits")
@@ -118,6 +125,51 @@ class GuildMember(Base):
     guild_id = Column(Integer, ForeignKey('guilds.id'))
     user_id = Column(Integer, ForeignKey('users.id'))
     role = Column(String, default='member')
+
+
+class TelemetryEvent(Base):
+    __tablename__ = 'telemetry_events'
+    id = Column(Integer, primary_key=True)
+    user_id = Column(Integer)
+    name = Column(String, nullable=False)
+    payload = Column(Text)
+    created_at = Column(DateTime, server_default=func.current_timestamp())
+
+
+class IntegrationItemMap(Base):
+    __tablename__ = 'integration_item_map'
+    id = Column(Integer, primary_key=True)
+    integration_id = Column(Integer, ForeignKey('integrations.id'), nullable=False)
+    external_id = Column(String, nullable=False)
+    entity_type = Column(String, nullable=False)
+    entity_id = Column(Integer, nullable=False)
+    updated_at = Column(DateTime, server_default=func.current_timestamp(), onupdate=func.current_timestamp())
+    created_at = Column(DateTime, server_default=func.current_timestamp())
+    __table_args__ = (
+        UniqueConstraint('integration_id', 'external_id', 'entity_type', name='uq_integration_item'),
+    )
+
+
+class PublicToken(Base):
+    __tablename__ = 'public_tokens'
+    id = Column(Integer, primary_key=True)
+    user_id = Column(Integer, ForeignKey('users.id'), nullable=False)
+    name = Column(String, nullable=False)
+    scope = Column(String, default='read:widgets')
+    token_hash = Column(String, unique=True, nullable=False)
+    created_at = Column(DateTime, server_default=func.current_timestamp())
+    last_used_at = Column(DateTime)
+
+
+class OIDCLoginState(Base):
+    __tablename__ = 'oidc_login_state'
+    id = Column(Integer, primary_key=True)
+    state = Column(String, unique=True, nullable=False)
+    provider = Column(String, nullable=False)
+    code_verifier = Column(String, nullable=False)
+    redirect_to = Column(String)
+    created_at = Column(DateTime, server_default=func.current_timestamp())
+    expires_at = Column(DateTime)
 
 
 def init_db():

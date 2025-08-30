@@ -1,0 +1,27 @@
+{
+  "id": "liferpg.pomodoro",
+  "name": "Pomodoro Timer",
+  "version": "1.0.0",
+  "author": "LifeRPG Team",
+  "description": "A Pomodoro timer plugin for LifeRPG that helps you stay focused and track your work sessions.",
+  "homepage": "https://github.com/TLimoges33/LifeRPG",
+  "targetApiVersion": "1.0",
+  "minAppVersion": "1.0.0",
+  "permissions": [
+    "habits:read",
+    "habits:write",
+    "ui:dashboard",
+    "ui:settings",
+    "storage:plugin"
+  ],
+  "extensionPoints": [
+    "dashboard.widget",
+    "settings.page"
+  ],
+  "entryPoint": "initialize",
+  "resourceLimits": {
+    "memoryMb": 16,
+    "storageMb": 5,
+    "cpuLimit": "moderate"
+  }
+}

@@ -1,0 +1,32 @@
+.container {
+    padding: 20px;
+    font-family: system-ui, sans-serif
+}
+
+nav a {
+    color: #0366d6;
+    text-decoration: none
+}
+
+nav a:hover {
+    text-decoration: underline
+}
+
+button {
+    padding: 6px 10px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    background: #fff;
+    cursor: pointer
+}
+
+button:disabled {
+    opacity: .6;
+    cursor: not-allowed
+}
+
+input {
+    padding: 6px 8px;
+    border: 1px solid #ddd;
+    border-radius: 6px
+}

@@ -1,0 +1,13 @@
+nohup: ignoring input
+
+> liferpg-modern-frontend@0.0.1 dev
+> vite --host 0.0.0.0
+
+[33mThe CJS build of Vite's Node API is deprecated. See https://vite.dev/guide/troubleshooting.html#vite-cjs-node-api-deprecated for more details.[39m
+
+  VITE v5.4.19  ready in 150 ms
+
+  ➜  Local:   http://localhost:5173/
+  ➜  Network: http://10.0.5.173:5173/
+9:39:17 PM [vite] hmr update /src/index.css
+9:39:17 PM [vite] page reload postcss.config.js

@@ -1,0 +1,262 @@
+name: Security Scans
+
+on:
+  push:
+    branches: [main, master, develop]
+  pull_request:
+    branches: [main, master]
+  schedule:
+    # Run weekly security scans
+    - cron: "0 2 * * 1"
+
+jobs:
+  codeql:
+    name: CodeQL Analysis
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+
+    strategy:
+      fail-fast: false
+      matrix:
+        language: ["javascript", "python"]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: ${{ matrix.language }}
+          # Override default queries with custom ones
+          queries: +security-and-quality
+
+      - name: Set up Python
+        if: matrix.language == 'python'
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
+
+      - name: Install Python dependencies
+        if: matrix.language == 'python'
+        run: |
+          cd modern/backend
+          pip install -r requirements.txt
+
+      - name: Set up Node.js
+        if: matrix.language == 'javascript'
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+
+      - name: Install Node.js dependencies
+        if: matrix.language == 'javascript'
+        run: |
+          cd modern/frontend
+          npm ci
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: "/language:${{matrix.language}}"
+
+  snyk:
+    name: Snyk Security Scan
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+
+      - name: Install Snyk CLI
+        run: npm install -g snyk
+
+      - name: Authenticate Snyk
+        run: snyk auth ${{ secrets.SNYK_TOKEN }}
+        continue-on-error: true
+
+      - name: Snyk test for Python backend
+        run: |
+          cd modern/backend
+          pip install -r requirements.txt
+          snyk test --severity-threshold=high
+        continue-on-error: true
+
+      - name: Snyk test for Node.js frontend
+        run: |
+          cd modern/frontend
+          npm ci
+          snyk test --severity-threshold=high
+        continue-on-error: true
+
+      - name: Snyk monitor
+        run: |
+          cd modern/backend && snyk monitor
+          cd ../frontend && snyk monitor
+        continue-on-error: true
+
+  dependency-scan:
+    name: Dependency Vulnerability Scan
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: "fs"
+          scan-ref: "."
+          format: "sarif"
+          output: "trivy-results.sarif"
+
+      - name: Upload Trivy scan results to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: "trivy-results.sarif"
+
+  semgrep:
+    name: Semgrep SAST
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Run Semgrep
+        uses: semgrep/semgrep-action@v1
+        with:
+          config: >-
+            p/security-audit
+            p/secrets
+            p/owasp-top-ten
+            p/python
+            p/javascript
+          generateSarif: "1"
+
+      - name: Upload SARIF file
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: semgrep.sarif
+
+  bandit:
+    name: Bandit Python Security Scan
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
+
+      - name: Install Bandit
+        run: pip install bandit[toml]
+
+      - name: Run Bandit scan
+        run: |
+          cd modern/backend
+          bandit -r . -f json -o bandit-report.json || true
+          bandit -r . -f txt
+
+      - name: Upload Bandit results
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: bandit-results
+          path: modern/backend/bandit-report.json
+
+  eslint-security:
+    name: ESLint Security Scan
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+
+      - name: Install dependencies
+        run: |
+          cd modern/frontend
+          npm ci
+
+      - name: Install ESLint security plugins
+        run: |
+          cd modern/frontend
+          npm install --save-dev eslint-plugin-security eslint-plugin-no-secrets
+
+      - name: Run ESLint security scan
+        run: |
+          cd modern/frontend
+          npx eslint . --ext .js,.jsx,.ts,.tsx --config .eslintrc.security.js || true
+
+  docker-security:
+    name: Docker Security Scan
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Build Docker images
+        run: |
+          cd modern
+          docker build -t liferpg-backend -f Dockerfile.backend .
+          docker build -t liferpg-frontend -f frontend/Dockerfile frontend/
+
+      - name: Run Trivy on Docker images
+        run: |
+          docker run --rm -v /var/run/docker.sock:/var/run/docker.sock \
+            -v $HOME/Library/Caches:/root/.cache/ \
+            aquasec/trivy image liferpg-backend
+          docker run --rm -v /var/run/docker.sock:/var/run/docker.sock \
+            -v $HOME/Library/Caches:/root/.cache/ \
+            aquasec/trivy image liferpg-frontend
+
+  secrets-scan:
+    name: Secrets Detection
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Run TruffleHog
+        uses: trufflesecurity/trufflehog@main
+        with:
+          path: ./
+          base: main
+          head: HEAD
+          extra_args: --debug --only-verified
+
+  security-summary:
+    name: Security Summary
+    runs-on: ubuntu-latest
+    needs: [codeql, dependency-scan, semgrep, bandit, eslint-security]
+    if: always()
+    steps:
+      - name: Security Scan Summary
+        run: |
+          echo "## Security Scan Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Scan Type | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|-----------|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| CodeQL | ${{ needs.codeql.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Dependency Scan | ${{ needs.dependency-scan.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Semgrep SAST | ${{ needs.semgrep.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Bandit | ${{ needs.bandit.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| ESLint Security | ${{ needs.eslint-security.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Check the Security tab for detailed results." >> $GITHUB_STEP_SUMMARY

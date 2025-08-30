@@ -1,0 +1,119 @@
+@import "tailwindcss";
+
+/* Import responsive enhancements */
+@import "./components/ui/responsive.css";
+
+/* Reset */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+/* Body styles with magical background */
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+        'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+        sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: #1a1a1a;
+    min-height: 100vh;
+}
+
+/* Magical color utilities */
+.text-gold-400 {
+    color: #fbbf24;
+}
+
+.text-gold-500 {
+    color: #f59e0b;
+}
+
+.border-gold-400 {
+    border-color: #fbbf24;
+}
+
+.bg-gold-50 {
+    background-color: #fffbeb;
+}
+
+/* Custom animations */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes sparkle {
+
+    0%,
+    100% {
+        transform: scale(1) rotate(0deg);
+        opacity: 1;
+    }
+
+    50% {
+        transform: scale(1.1) rotate(180deg);
+        opacity: 0.8;
+    }
+}
+
+.animate-fade-in {
+    animation: fadeIn 0.2s ease-out;
+}
+
+.animate-slide-up {
+    animation: slideUp 0.2s ease-out;
+}
+
+.animate-sparkle {
+    animation: sparkle 2s ease-in-out infinite;
+}
+
+/* Magical card effects */
+.magical-card {
+    background: linear-gradient(135deg, rgba(139, 92, 246, 0.1) 0%, rgba(59, 130, 246, 0.1) 100%);
+    border: 1px solid rgba(139, 92, 246, 0.3);
+    box-shadow: 0 4px 6px -1px rgba(139, 92, 246, 0.1);
+}
+
+.magical-card:hover {
+    box-shadow: 0 10px 15px -3px rgba(139, 92, 246, 0.2);
+    transform: translateY(-1px);
+}
+
+/* Scroll bar styling */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: rgba(139, 92, 246, 0.1);
+}
+
+::-webkit-scrollbar-thumb {
+    background: rgba(139, 92, 246, 0.3);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: rgba(139, 92, 246, 0.5);
+}

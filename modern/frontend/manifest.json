@@ -1,9 +1,20 @@
 {
-    "name": "LifeRPG Modern",
-    "short_name": "LifeRPG",
+    "name": "The Wizard's Grimoire",
+    "short_name": "Grimoire",
     "start_url": "/",
     "display": "standalone",
-    "background_color": "#ffffff",
-    "description": "A modern, cross-platform habit-leveling app.",
-    "icons": []
+    "background_color": "#1a1b4b",
+    "description": "Master your daily spells and unlock your magical potential.",
+    "icons": [
+        {
+            "src": "/icons/icon-192.png",
+            "sizes": "192x192",
+            "type": "image/png"
+        },
+        {
+            "src": "/icons/icon-512.png",
+            "sizes": "512x512",
+            "type": "image/png"
+        }
+    ]
 }

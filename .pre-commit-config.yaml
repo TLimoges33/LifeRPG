@@ -1,0 +1,13 @@
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.6.0
+    hooks:
+      - id: end-of-file-fixer
+      - id: trailing-whitespace
+  - repo: local
+    hooks:
+      - id: alembic-drift-check
+        name: alembic drift check
+        entry: bash -lc 'export PYTHONPATH=$(pwd); python scripts/alembic_check.py'
+        language: system
+        pass_filenames: false

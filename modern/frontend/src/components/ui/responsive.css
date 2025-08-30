@@ -1,0 +1,146 @@
+/* Mobile-first responsive improvements */
+
+/* Small devices (phones) */
+@media (max-width: 640px) {
+    .desktop-only {
+        display: none;
+    }
+
+    .mobile-stack {
+        flex-direction: column;
+    }
+
+    .mobile-full {
+        width: 100%;
+    }
+
+    .mobile-text-sm {
+        font-size: 0.875rem;
+    }
+
+    .mobile-p-2 {
+        padding: 0.5rem;
+    }
+
+    .mobile-space-y-2>*+* {
+        margin-top: 0.5rem;
+    }
+}
+
+/* Medium devices (tablets) */
+@media (min-width: 641px) and (max-width: 1024px) {
+    .tablet-grid-cols-2 {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+/* Large devices (desktops) */
+@media (min-width: 1025px) {
+    .desktop-grid-cols-3 {
+        grid-template-columns: repeat(3, 1fr);
+    }
+
+    .desktop-grid-cols-4 {
+        grid-template-columns: repeat(4, 1fr);
+    }
+}
+
+/* Interactive elements */
+.magical-hover {
+    transition: all 0.3s ease;
+}
+
+.magical-hover:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(124, 58, 237, 0.3);
+}
+
+/* Animations */
+@keyframes sparkle {
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.5;
+    }
+}
+
+.sparkle-animation {
+    animation: sparkle 2s ease-in-out infinite;
+}
+
+@keyframes float {
+
+    0%,
+    100% {
+        transform: translateY(0px);
+    }
+
+    50% {
+        transform: translateY(-5px);
+    }
+}
+
+.float-animation {
+    animation: float 3s ease-in-out infinite;
+}
+
+/* Magical gradient text */
+.magical-text {
+    background: linear-gradient(45deg, #8b5cf6, #ec4899, #8b5cf6);
+    background-size: 200% 200%;
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: gradientShift 3s ease infinite;
+}
+
+@keyframes gradientShift {
+
+    0%,
+    100% {
+        background-position: 0% 50%;
+    }
+
+    50% {
+        background-position: 100% 50%;
+    }
+}
+
+/* Glass morphism effect */
+.glass-morphism {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Improved focus states */
+.focus-magical:focus {
+    outline: none;
+    ring: 2px solid rgba(168, 85, 247, 0.5);
+    ring-offset: 2px;
+    ring-offset-color: transparent;
+}
+
+/* Loading shimmer effect */
+@keyframes shimmer {
+    0% {
+        background-position: -1000px 0;
+    }
+
+    100% {
+        background-position: 1000px 0;
+    }
+}
+
+.shimmer {
+    background: linear-gradient(90deg,
+            rgba(255, 255, 255, 0) 0%,
+            rgba(255, 255, 255, 0.1) 50%,
+            rgba(255, 255, 255, 0) 100%);
+    background-size: 1000px 100%;
+    animation: shimmer 2s infinite;
+}

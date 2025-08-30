@@ -1,0 +1,336 @@
+{
+    "annotations": {
+        "list": [
+            {
+                "builtIn": 1,
+                "datasource": {
+                    "type": "grafana",
+                    "uid": "-- Grafana --"
+                },
+                "enable": true,
+                "hide": true,
+                "iconColor": "rgba(0, 211, 255, 1)",
+                "name": "Annotations & Alerts",
+                "type": "dashboard"
+            }
+        ]
+    },
+    "editable": true,
+    "fiscalYearStartMonth": 0,
+    "graphTooltip": 0,
+    "id": null,
+    "links": [],
+    "liveNow": false,
+    "panels": [
+        {
+            "datasource": {
+                "type": "prometheus",
+                "uid": "PROM_DS"
+            },
+            "fieldConfig": {
+                "defaults": {},
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 8,
+                "w": 12,
+                "x": 0,
+                "y": 0
+            },
+            "id": 1,
+            "options": {
+                "legend": {
+                    "displayMode": "list"
+                },
+                "tooltip": {
+                    "mode": "single"
+                }
+            },
+            "targets": [
+                {
+                    "expr": "sum by (method, path, status) (rate(http_requests_total[5m]))",
+                    "legendFormat": "{{method}} {{path}} {{status}}"
+                }
+            ],
+            "title": "HTTP Requests (rate)",
+            "type": "timeseries"
+        },
+        {
+            "datasource": {
+                "type": "prometheus",
+                "uid": "PROM_DS"
+            },
+            "fieldConfig": {
+                "defaults": {},
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 8,
+                "w": 12,
+                "x": 12,
+                "y": 0
+            },
+            "id": 2,
+            "options": {
+                "legend": {
+                    "displayMode": "list"
+                },
+                "tooltip": {
+                    "mode": "single"
+                }
+            },
+            "targets": [
+                {
+                    "expr": "histogram_quantile(0.95, sum by (le, method, path) (rate(http_request_duration_seconds_bucket[5m])))",
+                    "legendFormat": "p95 {{method}} {{path}}"
+                }
+            ],
+            "title": "Request Latency p95",
+            "type": "timeseries"
+        },
+        {
+            "datasource": {
+                "type": "prometheus",
+                "uid": "PROM_DS"
+            },
+            "fieldConfig": {
+                "defaults": {},
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 8,
+                "w": 12,
+                "x": 0,
+                "y": 8
+            },
+            "id": 3,
+            "targets": [
+                {
+                    "expr": "sum(http_requests_in_progress)",
+                    "legendFormat": "in-progress"
+                }
+            ],
+            "title": "Requests In-Progress",
+            "type": "stat"
+        },
+        {
+            "datasource": {
+                "type": "prometheus",
+                "uid": "PROM_DS"
+            },
+            "fieldConfig": {
+                "defaults": {},
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 8,
+                "w": 12,
+                "x": 12,
+                "y": 8
+            },
+            "id": 4,
+            "targets": [
+                {
+                    "expr": "sum by (status) (rate(jobs_processed_total[5m]))",
+                    "legendFormat": "{{status}}"
+                }
+            ],
+            "title": "Jobs Processed (rate)",
+            "type": "timeseries"
+        },
+        {
+            "datasource": {
+                "type": "prometheus",
+                "uid": "PROM_DS"
+            },
+            "fieldConfig": {
+                "defaults": {},
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 8,
+                "w": 12,
+                "x": 0,
+                "y": 16
+            },
+            "id": 5,
+            "targets": [
+                {
+                    "expr": "sum by (provider, result) (rate(integration_sync_total[5m]))",
+                    "legendFormat": "{{provider}} {{result}}"
+                }
+            ],
+            "title": "Integration Syncs (rate)",
+            "type": "timeseries"
+        },
+        {
+            "datasource": {
+                "type": "prometheus",
+                "uid": "PROM_DS"
+            },
+            "fieldConfig": {
+                "defaults": {},
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 8,
+                "w": 12,
+                "x": 12,
+                "y": 16
+            },
+            "id": 6,
+            "targets": [
+                {
+                    "expr": "sum by (provider, verified) (rate(webhook_events_total[5m]))",
+                    "legendFormat": "{{provider}} {{verified}}"
+                }
+            ],
+            "title": "Webhook Events (rate)",
+            "type": "timeseries"
+        },
+        {
+            "datasource": {
+                "type": "prometheus",
+                "uid": "PROM_DS"
+            },
+            "fieldConfig": {
+                "defaults": {},
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 8,
+                "w": 12,
+                "x": 0,
+                "y": 24
+            },
+            "id": 7,
+            "targets": [
+                {
+                    "expr": "sum by (integration_id, result) (rate(integration_sync_by_integration_total[5m]))",
+                    "legendFormat": "id={{integration_id}} {{result}}"
+                }
+            ],
+            "title": "Integration Syncs by Integration (rate)",
+            "type": "timeseries"
+        },
+        {
+            "datasource": {
+                "type": "loki",
+                "uid": "LOKI_DS"
+            },
+            "gridPos": {
+                "h": 10,
+                "w": 24,
+                "x": 0,
+                "y": 32
+            },
+            "id": 8,
+            "options": {
+                "dedupStrategy": "none",
+                "enableLogDetails": true,
+                "prettifyLogMessage": true,
+                "showCommonLabels": false,
+                "showLabels": true,
+                "sortOrder": "Descending"
+            },
+            "targets": [
+                {
+                    "expr": "{job=\"liferpg\"} |= `\"type\":\"job\"`",
+                    "queryType": "range"
+                }
+            ],
+            "title": "Job Logs (structured)",
+            "type": "logs"
+        },
+        {
+            "datasource": {
+                "type": "prometheus",
+                "uid": "PROM_DS"
+            },
+            "fieldConfig": {
+                "defaults": {},
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 6,
+                "w": 12,
+                "x": 0,
+                "y": 42
+            },
+            "id": 9,
+            "targets": [
+                {
+                    "expr": "sum by (reason) (rate(sync_enqueue_skips_total[5m]))",
+                    "legendFormat": "skip {{reason}}"
+                }
+            ],
+            "title": "Sync Enqueue Skips (rate)",
+            "type": "timeseries"
+        },
+        {
+            "datasource": {
+                "type": "prometheus",
+                "uid": "PROM_DS"
+            },
+            "fieldConfig": {
+                "defaults": {},
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 6,
+                "w": 12,
+                "x": 12,
+                "y": 42
+            },
+            "id": 10,
+            "targets": [
+                {
+                    "expr": "sum by (provider) (sync_queue_depth)",
+                    "legendFormat": "depth {{provider}}"
+                }
+            ],
+            "title": "Sync Queue Depth",
+            "type": "stat"
+        },
+        {
+            "datasource": {
+                "type": "prometheus",
+                "uid": "PROM_DS"
+            },
+            "fieldConfig": {
+                "defaults": {},
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 6,
+                "w": 12,
+                "x": 0,
+                "y": 48
+            },
+            "id": 11,
+            "targets": [
+                {
+                    "expr": "sum by (provider) (sync_inflight)",
+                    "legendFormat": "inflight {{provider}}"
+                }
+            ],
+            "title": "Sync In-Flight",
+            "type": "stat"
+        }
+    ],
+    "schemaVersion": 38,
+    "style": "dark",
+    "tags": [
+        "liferpg"
+    ],
+    "templating": {
+        "list": []
+    },
+    "time": {
+        "from": "now-6h",
+        "to": "now"
+    },
+    "timezone": "browser",
+    "title": "LifeRPG Backend",
+    "version": 1
+}

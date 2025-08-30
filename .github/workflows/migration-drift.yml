@@ -1,0 +1,27 @@
+name: Migration Drift Check
+on:
+  pull_request:
+  push:
+    branches: [master]
+jobs:
+  drift:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install deps
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r modern/backend/requirements.txt
+      - name: Generate revision (dry run)
+        working-directory: modern
+        run: |
+          # use a temp alembic dir to detect changes
+          alembic -c backend/alembic.ini revision --autogenerate -m "drift-check" || true
+          # If a new file appears in versions with drift-check, fail
+          if ls backend/alembic/versions | grep -q "drift-check"; then
+            echo "Model changes detected without migration. Please create an Alembic migration."
+            exit 1
+          fi

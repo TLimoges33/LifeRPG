@@ -6,3 +6,7 @@ alembic
 psycopg2-binary
 pydantic
 redis
+rq
+prometheus-client
+pyotp
+passlib[bcrypt]

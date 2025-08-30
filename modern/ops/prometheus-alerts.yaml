@@ -1,0 +1,49 @@
+groups:
+  - name: liferpg.rules
+    interval: 1m
+    rules:
+      - alert: HighEnqueueSkips
+        expr: sum(rate(sync_enqueue_skips_total[5m])) > 0.2
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: High rate of sync enqueue skips
+          description: Enqueue skips ({{ $value }}) may indicate provider caps or guard contention.
+
+      - alert: ProviderAtConcurrencyCap
+        expr: max_over_time(sync_inflight[15m]) >= on(provider) (sync_provider_cap)
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: Provider at concurrency cap
+          description: In-flight syncs have been at the configured cap for 10m.
+
+      - alert: QueueDepthGrowing
+        expr: increase(sync_queue_depth[15m]) > 50
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: Queue depth increasing
+          description: Sync queue depth increased by >50 over 15m. Investigate worker capacity or provider health.
+
+      - alert: RQQueueBacklog
+        expr: max_over_time(rq_queue_length[10m]) > 100
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: RQ queue backlog
+          description: RQ queue length has exceeded 100 for 10 minutes.
+
+      - alert: SlowSyncsP95
+        expr: |
+          histogram_quantile(0.95, sum by (le, provider) (rate(sync_job_duration_seconds_bucket[5m]))) > 30
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: Slow syncs p95 over 30s
+          description: The 95th percentile of sync job durations is above 30 seconds for 10 minutes.

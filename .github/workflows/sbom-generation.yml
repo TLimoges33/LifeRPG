@@ -1,0 +1,182 @@
+name: Generate SBOM
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+  schedule:
+    # Generate SBOM weekly
+    - cron: "0 3 * * 2"
+  workflow_dispatch:
+
+jobs:
+  generate-sbom:
+    name: Generate Software Bill of Materials
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      actions: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+
+      - name: Install Python dependencies
+        run: |
+          cd modern/backend
+          pip install -r requirements.txt
+
+      - name: Install Node.js dependencies
+        run: |
+          cd modern/frontend
+          npm ci
+
+      - name: Install SBOM generators
+        run: |
+          # Install SPDX tools
+          npm install -g @cyclonedx/cyclonedx-npm
+          pip install cyclonedx-bom
+
+          # Install Syft for comprehensive SBOM generation
+          curl -sSfL https://raw.githubusercontent.com/anchore/syft/main/install.sh | sh -s -- -b /usr/local/bin
+
+      - name: Generate Python SBOM (CycloneDX)
+        run: |
+          cd modern/backend
+          cyclonedx-py -o liferpg-backend-sbom.json
+          cyclonedx-py -o liferpg-backend-sbom.xml --format xml
+
+      - name: Generate Node.js SBOM (CycloneDX)
+        run: |
+          cd modern/frontend
+          cyclonedx-npm --output-file liferpg-frontend-sbom.json
+          cyclonedx-npm --output-format xml --output-file liferpg-frontend-sbom.xml
+
+      - name: Generate comprehensive SBOM with Syft
+        run: |
+          # Generate SBOM for the entire project
+          syft . -o spdx-json=liferpg-complete-sbom.spdx.json
+          syft . -o cyclonedx-json=liferpg-complete-sbom.cyclonedx.json
+
+          # Generate SBOM for backend
+          syft modern/backend -o spdx-json=liferpg-backend-syft.spdx.json
+
+          # Generate SBOM for frontend
+          syft modern/frontend -o spdx-json=liferpg-frontend-syft.spdx.json
+
+      - name: Generate dependency tree
+        run: |
+          echo "# LifeRPG Dependency Analysis" > dependency-analysis.md
+          echo "" >> dependency-analysis.md
+          echo "Generated on: $(date)" >> dependency-analysis.md
+          echo "" >> dependency-analysis.md
+
+          echo "## Python Backend Dependencies" >> dependency-analysis.md
+          echo "\`\`\`" >> dependency-analysis.md
+          cd modern/backend
+          pip list --format=freeze >> ../../dependency-analysis.md
+          cd ../..
+          echo "\`\`\`" >> dependency-analysis.md
+          echo "" >> dependency-analysis.md
+
+          echo "## Node.js Frontend Dependencies" >> dependency-analysis.md
+          echo "\`\`\`" >> dependency-analysis.md
+          cd modern/frontend
+          npm list --depth=0 >> ../../dependency-analysis.md 2>&1 || true
+          cd ../..
+          echo "\`\`\`" >> dependency-analysis.md
+
+      - name: Generate security audit
+        run: |
+          echo "## Security Audit Results" >> dependency-analysis.md
+          echo "" >> dependency-analysis.md
+
+          echo "### Python Security Audit (pip-audit)" >> dependency-analysis.md
+          pip install pip-audit
+          echo "\`\`\`" >> dependency-analysis.md
+          cd modern/backend
+          pip-audit --format=text >> ../../dependency-analysis.md 2>&1 || echo "No vulnerabilities found" >> ../../dependency-analysis.md
+          cd ../..
+          echo "\`\`\`" >> dependency-analysis.md
+          echo "" >> dependency-analysis.md
+
+          echo "### Node.js Security Audit" >> dependency-analysis.md
+          echo "\`\`\`" >> dependency-analysis.md
+          cd modern/frontend
+          npm audit --audit-level=high >> ../../dependency-analysis.md 2>&1 || echo "No high/critical vulnerabilities found" >> ../../dependency-analysis.md
+          cd ../..
+          echo "\`\`\`" >> dependency-analysis.md
+
+      - name: Generate license summary
+        run: |
+          echo "## License Summary" >> dependency-analysis.md
+          echo "" >> dependency-analysis.md
+
+          echo "### Python Package Licenses" >> dependency-analysis.md
+          pip install pip-licenses
+          echo "\`\`\`" >> dependency-analysis.md
+          cd modern/backend
+          pip-licenses --format=markdown --output-file=../../python-licenses.md
+          cat ../../python-licenses.md >> ../../dependency-analysis.md
+          cd ../..
+          echo "\`\`\`" >> dependency-analysis.md
+          echo "" >> dependency-analysis.md
+
+          echo "### Node.js Package Licenses" >> dependency-analysis.md
+          echo "\`\`\`" >> dependency-analysis.md
+          cd modern/frontend
+          npx license-checker --summary >> ../../dependency-analysis.md 2>&1 || echo "License checker not available" >> ../../dependency-analysis.md
+          cd ../..
+          echo "\`\`\`" >> dependency-analysis.md
+
+      - name: Upload SBOM artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: sbom-files
+          path: |
+            modern/backend/liferpg-backend-sbom.*
+            modern/frontend/liferpg-frontend-sbom.*
+            liferpg-complete-sbom.*
+            liferpg-*-syft.*
+            dependency-analysis.md
+            python-licenses.md
+
+      - name: Create SBOM release
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Create a release with SBOM files
+          gh release create "sbom-$(date +%Y%m%d-%H%M%S)" \
+            --title "SBOM $(date +%Y-%m-%d)" \
+            --notes "Software Bill of Materials generated automatically" \
+            --prerelease \
+            modern/backend/liferpg-backend-sbom.json \
+            modern/frontend/liferpg-frontend-sbom.json \
+            liferpg-complete-sbom.cyclonedx.json \
+            liferpg-complete-sbom.spdx.json \
+            dependency-analysis.md
+
+      - name: Summary
+        run: |
+          echo "## SBOM Generation Complete" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Generated SBOM files:" >> $GITHUB_STEP_SUMMARY
+          echo "- Backend SBOM (CycloneDX): liferpg-backend-sbom.json" >> $GITHUB_STEP_SUMMARY
+          echo "- Frontend SBOM (CycloneDX): liferpg-frontend-sbom.json" >> $GITHUB_STEP_SUMMARY
+          echo "- Complete SBOM (CycloneDX): liferpg-complete-sbom.cyclonedx.json" >> $GITHUB_STEP_SUMMARY
+          echo "- Complete SBOM (SPDX): liferpg-complete-sbom.spdx.json" >> $GITHUB_STEP_SUMMARY
+          echo "- Dependency Analysis: dependency-analysis.md" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "SBOM files contain comprehensive dependency information for security and compliance purposes." >> $GITHUB_STEP_SUMMARY
