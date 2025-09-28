@@ -1,0 +1,257 @@
+name: Enhanced Security Scans
+
+on:
+  push:
+    branches: [main, master, develop]
+  pull_request:
+    branches: [main, master, develop]
+  schedule:
+    # Run weekly security scans
+    - cron: "0 2 * * 1"
+
+jobs:
+  codeql-analysis:
+    name: CodeQL Analysis
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+
+    strategy:
+      fail-fast: false
+      matrix:
+        language: ["python", "javascript"]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: ${{ matrix.language }}
+
+      - name: Autobuild
+        uses: github/codeql-action/autobuild@v3
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: "/language:${{matrix.language}}"
+
+  dependency-scan:
+    name: Dependency Security Scan
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: |
+          cd modern/backend
+          pip install -r requirements.txt
+
+      - name: Run Safety check
+        run: |
+          pip install safety
+          cd modern/backend
+          safety check --json --output safety-report.json || true
+
+      - name: Upload Safety report
+        uses: actions/upload-artifact@v4
+        with:
+          name: safety-report
+          path: modern/backend/safety-report.json
+
+  bandit-scan:
+    name: Python Security Scan (Bandit)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Bandit
+        run: pip install bandit[toml]
+
+      - name: Run Bandit security scan
+        run: |
+          cd modern/backend
+          bandit -r . -f json -o bandit-report.json --severity-level medium || true
+
+      - name: Upload Bandit report
+        uses: actions/upload-artifact@v4
+        with:
+          name: bandit-report
+          path: modern/backend/bandit-report.json
+
+  semgrep-scan:
+    name: Semgrep Security Scan
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Run Semgrep
+        id: semgrep
+        uses: semgrep/semgrep-action@v1
+        with:
+          config: >-
+            p/security-audit
+            p/secrets
+            p/owasp-top-ten
+          generateSarif: "1"
+
+      - name: Upload SARIF file for GitHub Advanced Security Dashboard
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: semgrep.sarif
+        if: always()
+
+  eslint-security:
+    name: Frontend Security Scan (ESLint)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install dependencies
+        run: |
+          cd modern/frontend
+          npm ci
+
+      - name: Install ESLint security plugins
+        run: |
+          cd modern/frontend
+          npm install --save-dev eslint-plugin-security eslint-plugin-no-secrets
+
+      - name: Create ESLint security config
+        run: |
+          cd modern/frontend
+          cat > .eslintrc.security.js << 'EOF'
+          module.exports = {
+            plugins: ['security', 'no-secrets'],
+            extends: ['plugin:security/recommended'],
+            rules: {
+              'no-secrets/no-secrets': 'error',
+              'security/detect-object-injection': 'warn',
+              'security/detect-non-literal-regexp': 'warn',
+              'security/detect-unsafe-regex': 'error',
+              'security/detect-buffer-noassert': 'error',
+              'security/detect-child-process': 'warn',
+              'security/detect-disable-mustache-escape': 'error',
+              'security/detect-eval-with-expression': 'error',
+              'security/detect-new-buffer': 'error',
+              'security/detect-no-csrf-before-method-override': 'error',
+              'security/detect-possible-timing-attacks': 'warn',
+              'security/detect-pseudoRandomBytes': 'error'
+            }
+          };
+          EOF
+
+      - name: Run ESLint security scan
+        run: |
+          cd modern/frontend
+          npx eslint . --ext .js,.jsx,.ts,.tsx --config .eslintrc.security.js --format json --output-file eslint-security-report.json || true
+
+      - name: Upload ESLint security report
+        uses: actions/upload-artifact@v4
+        with:
+          name: eslint-security-report
+          path: modern/frontend/eslint-security-report.json
+
+  docker-security:
+    name: Docker Security Scan
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Build Docker images
+        run: |
+          cd modern
+          docker build -t liferpg-backend -f backend/Dockerfile ../
+          docker build -t liferpg-frontend -f frontend/Dockerfile ../
+
+      - name: Run Trivy on backend image
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: "liferpg-backend"
+          format: "sarif"
+          output: "trivy-backend.sarif"
+
+      - name: Run Trivy on frontend image
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: "liferpg-frontend"
+          format: "sarif"
+          output: "trivy-frontend.sarif"
+
+      - name: Upload Trivy scan results to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: "."
+        if: always()
+
+  secrets-scan:
+    name: Secrets Detection
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Run TruffleHog
+        uses: trufflesecurity/trufflehog@main
+        with:
+          path: ./
+          base: main
+          head: HEAD
+          extra_args: --debug --only-verified
+
+  security-summary:
+    name: Security Summary
+    runs-on: ubuntu-latest
+    needs:
+      [
+        codeql-analysis,
+        dependency-scan,
+        bandit-scan,
+        semgrep-scan,
+        eslint-security,
+        docker-security,
+        secrets-scan,
+      ]
+    if: always()
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+
+      - name: Security Summary
+        run: |
+          echo "## Security Scan Summary" >> $GITHUB_STEP_SUMMARY
+          echo "| Scan Type | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|-----------|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| CodeQL | ${{ needs.codeql-analysis.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Dependency Scan | ${{ needs.dependency-scan.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Bandit | ${{ needs.bandit-scan.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Semgrep | ${{ needs.semgrep-scan.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| ESLint Security | ${{ needs.eslint-security.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Docker Security | ${{ needs.docker-security.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Secrets Scan | ${{ needs.secrets-scan.result }} |" >> $GITHUB_STEP_SUMMARY

@@ -419,3 +419,6 @@ def refresh_google_token_if_needed(token_row: models.OAuthToken, db: Session) ->
     except Exception:
         return None
 
+
+oauth_router = router
+

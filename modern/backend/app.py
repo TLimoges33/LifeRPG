@@ -3,7 +3,9 @@ from fastapi import Request
 from fastapi.middleware.cors import CORSMiddleware
 import models
 import oauth
+from oauth import oauth_router
 import auth
+from auth import auth_router
 import os
 import requests
 import time
@@ -17,8 +19,13 @@ from starlette.responses import Response
 import config
 from config import settings
 import middleware
+from middleware import BodySizeLimitMiddleware, RateLimitMiddleware, CSRFMiddleware
 import metrics
+from metrics import setup_metrics
 import plugins
+
+import adapters
+from adapters import ADAPTERS
 
 
 @asynccontextmanager
@@ -99,18 +106,38 @@ def hello():
 app.include_router(oauth_router, prefix='/api/v1')
 app.include_router(auth_router, prefix='/api/v1/auth')
 
+# Include mobile API for mobile-optimized endpoints
+try:
+    import mobile_api
+    app.include_router(mobile_api.router)
+    print("✅ Mobile API endpoints registered successfully")
+except ImportError as e:
+    print(f"⚠️  Mobile API not available: {e}")
+
+# Include AI Assistant API for Phase 3 features
+try:
+    import ai_assistant
+    app.include_router(ai_assistant.router)
+    print("✅ AI Assistant API endpoints registered successfully")
+except ImportError as e:
+    print(f"⚠️  AI Assistant API not available: {e}")
+
 # Initialize plugin system
 plugins.setup_plugin_system(app)
 
 
-from .rbac import require_admin
-from .db import get_db
-from .transaction import transactional
+import rbac
+from rbac import require_admin
+
+
+import db
+from db import get_db
+from transaction import transactional
 from sqlalchemy.orm import Session
-from .adapters import ADAPTERS
-from .worker import get_queue, example_job, enqueue_adapter_sync, run_adapter_sync
+import worker
+from worker import get_queue, example_job, enqueue_adapter_sync, run_adapter_sync
 import hmac, hashlib, base64
-from .auth import get_current_user
+from auth import get_current_user
 
 
 # Public API tokens (create/list/delete) for read-only widgets

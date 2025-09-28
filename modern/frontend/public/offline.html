@@ -1,264 +1,267 @@
 <!DOCTYPE html>
 <html lang="en">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Offline - The Wizard's Grimoire</title>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>LifeRPG - Offline</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background: linear-gradient(135deg, #1e1b4b, #312e81, #1e1b4b);
+        color: #e2e8f0;
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+      }
+
+      .container {
+        text-align: center;
+        max-width: 500px;
+        padding: 2rem;
+        background: rgba(30, 27, 75, 0.8);
+        border-radius: 20px;
+        border: 1px solid rgba(124, 58, 237, 0.3);
+        backdrop-filter: blur(10px);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+      }
+
+      .icon {
+        font-size: 4rem;
+        margin-bottom: 1rem;
+        animation: float 3s ease-in-out infinite;
+      }
+
+      @keyframes float {
+        0%,
+        100% {
+          transform: translateY(0px);
         }
 
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #1e1b4b, #312e81, #1e1b4b);
-            color: #e2e8f0;
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
+        50% {
+          transform: translateY(-10px);
         }
+      }
 
+      h1 {
+        color: #c084fc;
+        margin-bottom: 1rem;
+        font-size: 2rem;
+        font-weight: 600;
+      }
+
+      p {
+        color: #cbd5e1;
+        margin-bottom: 2rem;
+        line-height: 1.6;
+      }
+
+      .button {
+        display: inline-block;
+        background: linear-gradient(135deg, #7c3aed, #a855f7);
+        color: white;
+        padding: 12px 24px;
+        border-radius: 12px;
+        text-decoration: none;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        border: none;
+        cursor: pointer;
+        margin: 0 8px;
+      }
+
+      .button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(124, 58, 237, 0.4);
+      }
+
+      .button.secondary {
+        background: transparent;
+        border: 2px solid #7c3aed;
+        color: #c084fc;
+      }
+
+      .status {
+        margin-top: 2rem;
+        padding: 1rem;
+        background: rgba(249, 115, 22, 0.1);
+        border: 1px solid rgba(249, 115, 22, 0.3);
+        border-radius: 12px;
+        color: #fed7aa;
+      }
+
+      .features {
+        margin-top: 2rem;
+        text-align: left;
+      }
+
+      .features h3 {
+        color: #c084fc;
+        margin-bottom: 1rem;
+        font-size: 1.2rem;
+      }
+
+      .features ul {
+        list-style: none;
+        padding: 0;
+      }
+
+      .features li {
+        padding: 8px 0;
+        border-bottom: 1px solid rgba(124, 58, 237, 0.2);
+        color: #cbd5e1;
+      }
+
+      .features li:last-child {
+        border-bottom: none;
+      }
+
+      .features li::before {
+        content: "✨ ";
+        color: #a855f7;
+        margin-right: 8px;
+      }
+
+      .network-status {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: 8px 16px;
+        background: #ef4444;
+        color: white;
+        border-radius: 20px;
+        font-size: 0.9rem;
+        font-weight: 500;
+      }
+
+      .network-status.online {
+        background: #10b981;
+      }
+
+      @media (max-width: 600px) {
         .container {
-            text-align: center;
-            max-width: 500px;
-            padding: 2rem;
-            background: rgba(30, 27, 75, 0.8);
-            border-radius: 20px;
-            border: 1px solid rgba(124, 58, 237, 0.3);
-            backdrop-filter: blur(10px);
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
-        }
-
-        .icon {
-            font-size: 4rem;
-            margin-bottom: 1rem;
-            animation: float 3s ease-in-out infinite;
-        }
-
-        @keyframes float {
-
-            0%,
-            100% {
-                transform: translateY(0px);
-            }
-
-            50% {
-                transform: translateY(-10px);
-            }
+          padding: 1.5rem;
+          margin: 10px;
         }
 
         h1 {
-            color: #c084fc;
-            margin-bottom: 1rem;
-            font-size: 2rem;
-            font-weight: 600;
+          font-size: 1.5rem;
         }
 
-        p {
-            color: #cbd5e1;
-            margin-bottom: 2rem;
-            line-height: 1.6;
+        .icon {
+          font-size: 3rem;
         }
-
-        .button {
-            display: inline-block;
-            background: linear-gradient(135deg, #7c3aed, #a855f7);
-            color: white;
-            padding: 12px 24px;
-            border-radius: 12px;
-            text-decoration: none;
-            font-weight: 500;
-            transition: all 0.3s ease;
-            border: none;
-            cursor: pointer;
-            margin: 0 8px;
-        }
-
-        .button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(124, 58, 237, 0.4);
-        }
-
-        .button.secondary {
-            background: transparent;
-            border: 2px solid #7c3aed;
-            color: #c084fc;
-        }
-
-        .status {
-            margin-top: 2rem;
-            padding: 1rem;
-            background: rgba(249, 115, 22, 0.1);
-            border: 1px solid rgba(249, 115, 22, 0.3);
-            border-radius: 12px;
-            color: #fed7aa;
-        }
-
-        .features {
-            margin-top: 2rem;
-            text-align: left;
-        }
-
-        .features h3 {
-            color: #c084fc;
-            margin-bottom: 1rem;
-            font-size: 1.2rem;
-        }
-
-        .features ul {
-            list-style: none;
-            padding: 0;
-        }
-
-        .features li {
-            padding: 8px 0;
-            border-bottom: 1px solid rgba(124, 58, 237, 0.2);
-            color: #cbd5e1;
-        }
-
-        .features li:last-child {
-            border-bottom: none;
-        }
-
-        .features li::before {
-            content: "✨ ";
-            color: #a855f7;
-            margin-right: 8px;
-        }
-
-        .network-status {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            padding: 8px 16px;
-            background: #ef4444;
-            color: white;
-            border-radius: 20px;
-            font-size: 0.9rem;
-            font-weight: 500;
-        }
-
-        .network-status.online {
-            background: #10b981;
-        }
-
-        @media (max-width: 600px) {
-            .container {
-                padding: 1.5rem;
-                margin: 10px;
-            }
-
-            h1 {
-                font-size: 1.5rem;
-            }
-
-            .icon {
-                font-size: 3rem;
-            }
-        }
+      }
     </style>
-</head>
+  </head>
 
-<body>
+  <body>
     <div id="networkStatus" class="network-status">📡 Offline</div>
 
     <div class="container">
-        <div class="icon">🧙‍♂️</div>
-        <h1>You're Offline</h1>
-        <p>Your magical connection has been temporarily disrupted, but your grimoire is still accessible!</p>
+      <div class="icon">🧙‍♂️</div>
+      <h1>You're Offline</h1>
+      <p>
+        Your magical connection has been temporarily disrupted, but your
+        grimoire is still accessible!
+      </p>
 
-        <div style="margin-bottom: 2rem;">
-            <button class="button" onclick="tryReconnect()">🔄 Try Reconnecting</button>
-            <a href="/" class="button secondary">📖 Open Grimoire</a>
-        </div>
+      <div style="margin-bottom: 2rem">
+        <button class="button" onclick="tryReconnect()">
+          🔄 Try Reconnecting
+        </button>
+        <a href="/" class="button secondary">📖 Open Grimoire</a>
+      </div>
 
-        <div class="status">
-            <strong>🛡️ Offline Mode Active</strong><br>
-            Your data is safely stored locally and will sync when connection is restored.
-        </div>
+      <div class="status">
+        <strong>🛡️ Offline Mode Active</strong><br />
+        Your data is safely stored locally and will sync when connection is
+        restored.
+      </div>
 
-        <div class="features">
-            <h3>✨ What You Can Still Do</h3>
-            <ul>
-                <li>View your existing habits and progress</li>
-                <li>Mark habits as complete (will sync later)</li>
-                <li>Browse cached analytics and insights</li>
-                <li>Access previously loaded content</li>
-                <li>Create new habits (will sync when online)</li>
-            </ul>
-        </div>
+      <div class="features">
+        <h3>✨ What You Can Still Do</h3>
+        <ul>
+          <li>View your existing habits and progress</li>
+          <li>Mark habits as complete (will sync later)</li>
+          <li>Browse cached analytics and insights</li>
+          <li>Access previously loaded content</li>
+          <li>Create new habits (will sync when online)</li>
+        </ul>
+      </div>
     </div>
 
     <script>
-        // Check network status
-        function updateNetworkStatus() {
-            const statusEl = document.getElementById('networkStatus');
-            if (navigator.onLine) {
-                statusEl.textContent = '🌐 Back Online!';
-                statusEl.className = 'network-status online';
-                setTimeout(() => {
-                    window.location.href = '/';
-                }, 2000);
-            } else {
-                statusEl.textContent = '📡 Offline';
-                statusEl.className = 'network-status';
-            }
+      // Check network status
+      function updateNetworkStatus() {
+        const statusEl = document.getElementById("networkStatus");
+        if (navigator.onLine) {
+          statusEl.textContent = "🌐 Back Online!";
+          statusEl.className = "network-status online";
+          setTimeout(() => {
+            window.location.href = "/";
+          }, 2000);
+        } else {
+          statusEl.textContent = "📡 Offline";
+          statusEl.className = "network-status";
         }
+      }
 
-        // Try to reconnect
-        function tryReconnect() {
-            const button = event.target;
-            button.textContent = '🔄 Checking...';
-            button.disabled = true;
+      // Try to reconnect
+      function tryReconnect() {
+        const button = event.target;
+        button.textContent = "🔄 Checking...";
+        button.disabled = true;
 
-            // Simple connectivity test
-            fetch('/', {
-                method: 'HEAD',
-                cache: 'no-cache'
+        // Simple connectivity test
+        fetch("/", {
+          method: "HEAD",
+          cache: "no-cache",
+        })
+          .then(() => {
+            button.textContent = "✅ Connected!";
+            setTimeout(() => {
+              window.location.href = "/";
+            }, 1000);
+          })
+          .catch(() => {
+            button.textContent = "❌ Still Offline";
+            setTimeout(() => {
+              button.textContent = "🔄 Try Reconnecting";
+              button.disabled = false;
+            }, 2000);
+          });
+      }
+
+      // Listen for network changes
+      window.addEventListener("online", updateNetworkStatus);
+      window.addEventListener("offline", updateNetworkStatus);
+
+      // Initial status check
+      updateNetworkStatus();
+
+      // Auto-retry connection every 30 seconds
+      setInterval(() => {
+        if (!navigator.onLine) {
+          fetch("/", {
+            method: "HEAD",
+            cache: "no-cache",
+          })
+            .then(() => {
+              updateNetworkStatus();
             })
-                .then(() => {
-                    button.textContent = '✅ Connected!';
-                    setTimeout(() => {
-                        window.location.href = '/';
-                    }, 1000);
-                })
-                .catch(() => {
-                    button.textContent = '❌ Still Offline';
-                    setTimeout(() => {
-                        button.textContent = '🔄 Try Reconnecting';
-                        button.disabled = false;
-                    }, 2000);
-                });
+            .catch(() => {
+              // Still offline
+            });
         }
-
-        // Listen for network changes
-        window.addEventListener('online', updateNetworkStatus);
-        window.addEventListener('offline', updateNetworkStatus);
-
-        // Initial status check
-        updateNetworkStatus();
-
-        // Auto-retry connection every 30 seconds
-        setInterval(() => {
-            if (!navigator.onLine) {
-                fetch('/', {
-                    method: 'HEAD',
-                    cache: 'no-cache'
-                })
-                    .then(() => {
-                        updateNetworkStatus();
-                    })
-                    .catch(() => {
-                        // Still offline
-                    });
-            }
-        }, 30000);
+      }, 30000);
     </script>
-</body>
-
+  </body>
 </html>

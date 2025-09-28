@@ -38,8 +38,8 @@ class Settings:
             extra = ["https://www.googleapis.com"]
         self.CSP_CONNECT_EXTRA: List[str] = extra
 
-        # CSRF
-        self.CSRF_ENABLE: bool = getenv_bool("CSRF_ENABLE", False)
+        # CSRF - enable by default for security
+        self.CSRF_ENABLE: bool = getenv_bool("CSRF_ENABLE", True)
         self.CSRF_HEADER_NAME: str = os.getenv("CSRF_HEADER_NAME", "x-csrf-token")
         self.CSRF_COOKIE_NAME: str = os.getenv("CSRF_COOKIE_NAME", "csrf_token")
 
@@ -77,17 +77,21 @@ class Settings:
 
     def csp_header(self) -> str:
         connect_src = " ".join(["'self'", *self.CSP_CONNECT_EXTRA])
-        # Allow inline styles in dev to keep things simple; consider removing in prod
-        return "; ".join([
+        # Enhanced CSP for better security
+        csp_directives = [
             "default-src 'self'",
             "frame-ancestors 'none'",
             "base-uri 'self'",
             "object-src 'none'",
-            "img-src 'self' data:",
+            "img-src 'self' data: https:",
             f"connect-src {connect_src}",
             "script-src 'self'",
             "style-src 'self' 'unsafe-inline'",
-        ])
+            "font-src 'self'",
+            "form-action 'self'",
+            "upgrade-insecure-requests" if self.FORCE_HTTPS else "",
+        ]
+        return "; ".join([directive for directive in csp_directives if directive])
 
 
 settings = Settings()

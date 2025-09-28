@@ -10,10 +10,20 @@ from sqlalchemy.orm import Session
 from config import settings
 import secrets
 from totp import generate_totp_secret, provisioning_uri, verify_totp, generate_recovery_codes, hash_recovery_codes, verify_and_consume_recovery_code
+from schemas import LoginRequest, SignupRequest, TwoFAEnableRequest, TwoFADisableRequest
+from security_monitor import log_login_failure, log_unauthorized_access
 
 router = APIRouter()
 
-JWT_SECRET = os.getenv('LIFERPG_JWT_SECRET', 'dev_jwt_secret_change')
+# Secure JWT secret management - MUST be set in production
+JWT_SECRET = os.getenv('LIFERPG_JWT_SECRET')
+if not JWT_SECRET:
+    if os.getenv('ENVIRONMENT') == 'production':
+        raise RuntimeError("LIFERPG_JWT_SECRET environment variable is required in production")
+    # Only allow fallback in development
+    JWT_SECRET = secrets.token_urlsafe(64)
+    print("WARNING: Using generated JWT secret for development. Set LIFERPG_JWT_SECRET in production!")
+
 JWT_ALGO = 'HS256'
 JWT_EXP_SECONDS = 60 * 60 * 24  # 1 day
 
@@ -35,15 +45,13 @@ def decode_token(token: str) -> dict:
 
 
 @router.post('/signup')
-def signup(payload: dict, request: Request = None, db: Session = Depends(get_db)):
-    email = payload.get('email')
-    password = payload.get('password')
-    if not email or not password:
-        raise HTTPException(status_code=400, detail='email and password required')
+def signup(payload: SignupRequest, request: Request = None, db: Session = Depends(get_db)):
+    email = payload.email
+    password = payload.password
     existing = db.query(models.User).filter_by(email=email).first()
     if existing:
         raise HTTPException(status_code=400, detail='email exists')
-    user = models.User(email=email, password_hash=bcrypt.hash(password), display_name=payload.get('display_name'))
+    user = models.User(email=email, password_hash=bcrypt.hash(password), display_name=payload.display_name)
     db.add(user)
     db.commit()
     db.refresh(user)
@@ -63,15 +71,20 @@ def signup(payload: dict, request: Request = None, db: Session = Depends(get_db)
 
 
 @router.post('/login')
-def login(payload: dict, db: Session = Depends(get_db)):
-    email = payload.get('email')
-    password = payload.get('password')
-    totp_code = payload.get('totp_code')
-    recovery_code = payload.get('recovery_code')
-    if not email or not password:
-        raise HTTPException(status_code=400, detail='email and password required')
+def login(payload: LoginRequest, db: Session = Depends(get_db)):
+    email = payload.email
+    password = payload.password
+    totp_code = payload.totp_code
+    recovery_code = payload.recovery_code
+    
     user = db.query(models.User).filter_by(email=email).first()
     if not user or not user.password_hash or not bcrypt.verify(password, user.password_hash):
+        # Log failed login attempt
+        log_login_failure(
+            user_id=email,
+            ip_address=request.client.host if request and request.client else "unknown",
+            user_agent=request.headers.get("user-agent") if request else None
+        )
         raise HTTPException(status_code=401, detail='invalid credentials')
     # If TOTP is enabled, require totp_code or recovery_code
     if getattr(user, 'totp_enabled', 0):
@@ -112,6 +125,36 @@ def totp_setup(payload: dict = None, request: Request = None, db: Session = Depe
     user.recovery_codes = '\n'.join(hashes)
     db.commit()
     return {'otpauth_uri': uri, 'recovery_codes': codes}
+
+
+@router.get('/2fa/qr')
+def totp_qr(request: Request = None, db: Session = Depends(get_db)):
+    """Generate QR code for TOTP setup securely on server"""
+    import qrcode
+    import io
+    import base64
+    
+    user = get_current_user(request, db, prefer_alt_session=True)
+    
+    # Check if user has a TOTP secret (setup in progress)
+    if not user.totp_secret:
+        raise HTTPException(status_code=400, detail='No TOTP setup in progress')
+    
+    otpauth_uri = provisioning_uri(user.totp_secret, user.email)
+    
+    # Generate QR code
+    qr = qrcode.QRCode(version=1, box_size=10, border=5)
+    qr.add_data(otpauth_uri)
+    qr.make(fit=True)
+    
+    img = qr.make_image(fill_color="black", back_color="white")
+    
+    # Convert to base64 for JSON response
+    img_buffer = io.BytesIO()
+    img.save(img_buffer, format='PNG')
+    img_base64 = base64.b64encode(img_buffer.getvalue()).decode()
+    
+    return {'qr_code': f'data:image/png;base64,{img_base64}'}
 
 
 @router.post('/2fa/enable')
@@ -192,3 +235,6 @@ def get_current_user(request: Request, db: Session = Depends(get_db), prefer_alt
 def me(request: Request, db: Session = Depends(get_db)):
     user = get_current_user(request, db)
     return { 'id': user.id, 'email': user.email, 'role': user.role, 'display_name': user.display_name }
+
+
+auth_router = router

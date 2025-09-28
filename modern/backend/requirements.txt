@@ -10,3 +10,9 @@ rq
 prometheus-client
 pyotp
 passlib[bcrypt]
+qrcode[pil]
+schedule
+python-multipart
+cryptography
+requests
+pillow

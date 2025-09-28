@@ -1,3 +1,15 @@
 {
-    "chat.mcp.autostart": "newAndOutdated"
+  "chat.mcp.autostart": "never",
+  "cSpell.words": [
+    "CCPA",
+    "Grimoire",
+    "HSTS",
+    "PKCE",
+    "Pydantic",
+    "Pytest",
+    "Scrying",
+    "Shadcn",
+    "TOTP",
+    "WCAG"
+  ]
 }

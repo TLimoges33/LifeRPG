@@ -30,7 +30,6 @@ from sqlalchemy.orm import Session, relationship
 
 from db import get_db
 import models
-from plugin_runtime import get_plugin_runtime
 
 # Configure logging
 logger = logging.getLogger("liferpg.plugins")
@@ -102,7 +101,7 @@ class PluginMetadata(BaseModel):
 
 
 # Database models
-class DBPlugin(Base):
+class DBPlugin(models.Base):
     """Database model for plugin metadata."""
     
     __tablename__ = "plugins"

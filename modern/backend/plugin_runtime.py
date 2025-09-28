@@ -27,18 +27,26 @@ logger = logging.getLogger("liferpg.plugin_runtime")
 
 
 class ResourceMonitor:
-    """Monitors resource usage for plugin execution."""
+    """Enhanced resource monitoring with security controls."""
     
     def __init__(self, limits: Dict[str, Any]):
         self.memory_limit_mb = limits.get('memory_mb', 16)
         self.cpu_time_limit = limits.get('cpu_time_seconds', 5.0)
+        self.network_requests_limit = limits.get('network_requests', 0)  # Default: no network
+        self.file_operations_limit = limits.get('file_operations', 0)  # Default: no file access
         self.start_time = None
         self.peak_memory = 0
+        self.network_requests_count = 0
+        self.file_operations_count = 0
+        self.blocked_operations = []
     
     def start_monitoring(self):
         """Start monitoring resource usage."""
         self.start_time = time.time()
         self.peak_memory = 0
+        self.network_requests_count = 0
+        self.file_operations_count = 0
+        self.blocked_operations = []
     
     def check_limits(self) -> bool:
         """Check if resource limits have been exceeded."""
@@ -47,6 +55,38 @@ class ResourceMonitor:
             
         # Check CPU time limit
         elapsed = time.time() - self.start_time
+        if elapsed > self.cpu_time_limit:
+            self.blocked_operations.append(f"CPU time limit exceeded: {elapsed:.2f}s > {self.cpu_time_limit}s")
+            return False
+        
+        return True
+    
+    def check_network_permission(self) -> bool:
+        """Check if plugin can make network requests."""
+        if self.network_requests_count >= self.network_requests_limit:
+            self.blocked_operations.append(f"Network requests limit exceeded: {self.network_requests_count}")
+            return False
+        self.network_requests_count += 1
+        return True
+    
+    def check_file_permission(self, path: str) -> bool:
+        """Check if plugin can access files."""
+        if self.file_operations_count >= self.file_operations_limit:
+            self.blocked_operations.append(f"File operations limit exceeded: {self.file_operations_count}")
+            return False
+        
+        # Additional security: restrict file access to specific directories
+        allowed_paths = ['/tmp/liferpg_plugin', '/var/liferpg/plugin_data']
+        if not any(path.startswith(allowed) for allowed in allowed_paths):
+            self.blocked_operations.append(f"File access denied: {path} not in allowed paths")
+            return False
+        
+        self.file_operations_count += 1
+        return True
+    
+    def _check_cpu_time_limit(self, start_time: float) -> bool:
+        """Check if plugin has exceeded CPU time limit."""
+        elapsed = time.time() - start_time
         if elapsed > self.cpu_time_limit:
             logger.warning(f"Plugin exceeded CPU time limit: {elapsed:.2f}s > {self.cpu_time_limit}s")
             return False

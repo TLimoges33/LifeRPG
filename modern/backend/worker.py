@@ -9,10 +9,13 @@ except Exception:
     Queue = None
     Retry = None
     Redis = None
-from .metrics import record_job_processed, record_integration_sync_by_id, log_job_event, record_enqueue_skipped, SYNC_JOB_DURATION_SECONDS
-from .notifier import emit_sync_event
-from .hooks import hooks_for_integration
-from .adapters import ADAPTERS, AdapterError, TransientError
+from metrics import (
+    record_job_processed, record_integration_sync_by_id, 
+    log_job_event, record_enqueue_skipped, SYNC_JOB_DURATION_SECONDS
+)
+from notifier import emit_sync_event
+from hooks import hooks_for_integration
+from adapters import ADAPTERS, AdapterError, TransientError
 
 
 def get_queue():

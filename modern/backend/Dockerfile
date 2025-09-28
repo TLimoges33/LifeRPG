@@ -4,6 +4,9 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     PIP_NO_CACHE_DIR=1
 
+# Create non-root user for security
+RUN groupadd -r appuser && useradd -r -g appuser -u 1001 appuser
+
 WORKDIR /app
 
 # System deps (optional): add git/curl if needed
@@ -18,6 +21,12 @@ RUN python -m pip install --upgrade pip \
 
 # Copy application code (backend + alembic)
 COPY modern /app/modern
+
+# Change ownership to non-root user
+RUN chown -R appuser:appuser /app
+
+# Switch to non-root user
+USER appuser
 
 ENV PYTHONPATH=/app
 

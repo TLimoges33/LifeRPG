@@ -1,10 +1,11 @@
 from sqlalchemy import (
-    Column, Integer, String, Text, DateTime, ForeignKey, create_engine, func, UniqueConstraint
+    Column, Integer, String, Text, DateTime, ForeignKey, create_engine, func, UniqueConstraint, Float, Index
 )
 from sqlalchemy.orm import declarative_base
 from sqlalchemy.orm import relationship, sessionmaker
 import os
 from datetime import datetime
+from crypto import encrypt_text, decrypt_text
 
 Base = declarative_base()
 DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./modern_dev.db")
@@ -18,15 +19,52 @@ class User(Base):
     password_hash = Column(String)
     role = Column(String, default='user')
     display_name = Column(String)
-    totp_secret = Column(String)  # base32 secret (encrypted at rest optional)
+    _totp_secret = Column("totp_secret", String)  # encrypted at rest
     totp_enabled = Column(Integer, default=0)  # 0/1
-    recovery_codes = Column(Text)  # newline-separated bcrypt hashes
+    _recovery_codes = Column("recovery_codes", Text)  # encrypted at rest
     created_at = Column(DateTime, server_default=func.current_timestamp())
     updated_at = Column(DateTime, server_default=func.current_timestamp(), onupdate=func.current_timestamp())
 
     profile = relationship("Profile", back_populates="user", cascade="all, delete-orphan")
     projects = relationship("Project", back_populates="user", cascade="all, delete-orphan")
     habits = relationship("Habit", back_populates="user", cascade="all, delete-orphan")
+    momentum = relationship("UserMomentum", back_populates="user", cascade="all, delete-orphan")
+    
+    @property
+    def totp_secret(self):
+        """Decrypt TOTP secret when accessed"""
+        if self._totp_secret:
+            try:
+                return decrypt_text(self._totp_secret)
+            except Exception:
+                return None
+        return None
+    
+    @totp_secret.setter
+    def totp_secret(self, value):
+        """Encrypt TOTP secret when stored"""
+        if value:
+            self._totp_secret = encrypt_text(value)
+        else:
+            self._totp_secret = None
+    
+    @property
+    def recovery_codes(self):
+        """Decrypt recovery codes when accessed"""
+        if self._recovery_codes:
+            try:
+                return decrypt_text(self._recovery_codes)
+            except Exception:
+                return None
+        return None
+    
+    @recovery_codes.setter
+    def recovery_codes(self, value):
+        """Encrypt recovery codes when stored"""
+        if value:
+            self._recovery_codes = encrypt_text(value)
+        else:
+            self._recovery_codes = None
 
 class Profile(Base):
     __tablename__ = 'profiles'
@@ -65,6 +103,13 @@ class Habit(Base):
 
     user = relationship("User", back_populates="habits")
 
+    __table_args__ = (
+        Index('idx_habit_user_status', 'user_id', 'status'),
+        Index('idx_habit_user_created', 'user_id', 'created_at'),
+        Index('idx_habit_due_date', 'due_date'),
+        Index('idx_habit_status', 'status'),
+    )
+
 class Log(Base):
     __tablename__ = 'logs'
     id = Column(Integer, primary_key=True)
@@ -72,6 +117,12 @@ class Log(Base):
     user_id = Column(Integer, ForeignKey('users.id'), nullable=False)
     action = Column(String)
     timestamp = Column(DateTime, server_default=func.current_timestamp())
+
+    __table_args__ = (
+        Index('idx_log_user_timestamp', 'user_id', 'timestamp'),
+        Index('idx_log_user_action', 'user_id', 'action'),
+        Index('idx_log_habit_timestamp', 'habit_id', 'timestamp'),
+    )
 
 class Achievement(Base):
     __tablename__ = 'achievements'
@@ -170,6 +221,17 @@ class OIDCLoginState(Base):
     redirect_to = Column(String)
     created_at = Column(DateTime, server_default=func.current_timestamp())
     expires_at = Column(DateTime)
+
+
+class UserMomentum(Base):
+    __tablename__ = 'user_momentum'
+    
+    id = Column(Integer, primary_key=True)
+    user_id = Column(Integer, ForeignKey('users.id'), nullable=False)
+    momentum = Column(Float, default=50.0)  # Current momentum level (0-100)
+    last_updated = Column(DateTime, server_default=func.current_timestamp())
+    
+    user = relationship("User", back_populates="momentum")
 
 
 def init_db():

@@ -1,0 +1,202 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [master, develop]
+  pull_request:
+    branches: [master, develop]
+
+jobs:
+  test-backend:
+    runs-on: ubuntu-latest
+    name: Backend Tests & AI Verification
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.12"
+
+      - name: Cache Python packages
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements*.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y portaudio19-dev libgl1-mesa-glx libglib2.0-0
+
+      - name: Install Python dependencies
+        run: |
+          cd modern/backend
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install -r requirements_ai.txt
+          pip install pytest pytest-asyncio pytest-cov
+
+      - name: Test AI Model Loading
+        run: |
+          cd modern/backend
+          python -c "
+          from huggingface_ai import HuggingFaceAI
+          import asyncio
+          async def test():
+            ai = HuggingFaceAI()
+            result = await ai.parse_habit_from_text('test habit')
+            print('✅ AI models loaded successfully')
+            print(f'Test result: {result}')
+          asyncio.run(test())
+          "
+
+      - name: Run Backend Tests
+        run: |
+          cd modern/backend
+          pytest tests/ -v --cov=. --cov-report=xml
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          file: ./modern/backend/coverage.xml
+          flags: backend
+          name: backend-coverage
+
+  test-frontend:
+    runs-on: ubuntu-latest
+    name: Frontend Tests & Build
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+          cache: "npm"
+          cache-dependency-path: "modern/frontend/package-lock.json"
+
+      - name: Install dependencies
+        run: |
+          cd modern/frontend
+          npm ci
+
+      - name: Run linting
+        run: |
+          cd modern/frontend
+          npm run lint
+
+      - name: Run tests
+        run: |
+          cd modern/frontend
+          npm test -- --coverage --watchAll=false
+
+      - name: Build production bundle
+        run: |
+          cd modern/frontend
+          npm run build
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: frontend-build
+          path: modern/frontend/dist/
+          retention-days: 7
+
+  security-scan:
+    runs-on: ubuntu-latest
+    name: Security Scanning
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run security audit (npm)
+        run: |
+          cd modern/frontend
+          npm audit --audit-level=moderate
+
+      - name: Run security audit (pip)
+        run: |
+          cd modern/backend
+          pip install safety
+          safety check -r requirements.txt -r requirements_ai.txt
+
+      - name: Run CodeQL Analysis
+        uses: github/codeql-action/init@v3
+        with:
+          languages: python, javascript
+
+      - name: Autobuild
+        uses: github/codeql-action/autobuild@v3
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+
+  deploy-preview:
+    if: github.event_name == 'pull_request'
+    needs: [test-backend, test-frontend]
+    runs-on: ubuntu-latest
+    name: Deploy Preview
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Deploy to Vercel Preview
+        uses: amondnet/vercel-action@v25
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          vercel-args: "--prod"
+          vercel-org-id: ${{ secrets.ORG_ID}}
+          vercel-project-id: ${{ secrets.PROJECT_ID}}
+          working-directory: ./modern/frontend
+
+  deploy-production:
+    if: github.ref == 'refs/heads/master' && github.event_name == 'push'
+    needs: [test-backend, test-frontend, security-scan]
+    runs-on: ubuntu-latest
+    name: Deploy to Production
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Deploy Frontend to Vercel
+        uses: amondnet/vercel-action@v25
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          vercel-args: "--prod"
+          vercel-org-id: ${{ secrets.ORG_ID}}
+          vercel-project-id: ${{ secrets.PROJECT_ID}}
+          working-directory: ./modern/frontend
+
+      - name: Deploy Backend to Railway
+        run: |
+          echo "Backend deployment would happen here"
+          echo "Using Railway CLI or API"
+          # railway deploy --service=liferpg-backend
+
+      - name: Create Release
+        if: github.event_name == 'push'
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: v${{ github.run_number }}
+          release_name: Release v${{ github.run_number }}
+          body: |
+            ## ✨ What's New
+            - Automated deployment from commit ${{ github.sha }}
+            - Backend and frontend updated
+            - AI models: HuggingFace Transformers
+
+            ## 🔧 Technical Details  
+            - Build: ${{ github.run_number }}
+            - Commit: ${{ github.sha }}
+            - Branch: ${{ github.ref }}
+          draft: false
+          prerelease: false

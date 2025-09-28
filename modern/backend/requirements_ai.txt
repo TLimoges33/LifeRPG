@@ -1,0 +1,39 @@
+# Additional requirements for Phase 3 AI features
+# Add these to your existing requirements.txt
+
+# HuggingFace Transformers (for local AI models)
+transformers>=4.21.0
+torch>=1.12.0
+torchvision>=0.13.0
+torchaudio>=0.12.0
+
+# Sentence transformers (for embeddings and similarity)
+sentence-transformers>=2.2.0
+
+# Speech recognition
+speechrecognition>=3.10.0
+pyaudio>=0.2.11
+
+# Image processing
+pillow>=9.0.0
+opencv-python>=4.6.0
+
+# Audio processing
+librosa>=0.9.0
+soundfile>=0.10.0
+
+# Optional: Accelerated inference
+# accelerate>=0.12.0  # For GPU acceleration
+# optimum>=1.2.0      # For optimized models
+
+# Text processing utilities
+nltk>=3.7
+spacy>=3.4.0
+
+# Machine learning utilities
+scikit-learn>=1.1.0
+numpy>=1.21.0
+pandas>=1.4.0
+
+# For model downloads and caching
+huggingface-hub>=0.8.0
