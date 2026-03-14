@@ -127,14 +127,14 @@ jobs:
         if: matrix.language == 'javascript'
         run: |
           cd modern/frontend
-          npm audit --audit-level=moderate || true
+          npm audit --audit-level=moderate
 
       - name: Run security audit (pip)
         if: matrix.language == 'python'
         run: |
           cd modern/backend
           pip install safety
-          safety check -r requirements.txt -r requirements_ai.txt || true
+          safety check -r requirements.txt -r requirements_ai.txt
 
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v3

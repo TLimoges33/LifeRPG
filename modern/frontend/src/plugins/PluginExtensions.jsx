@@ -5,7 +5,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '../components/ui/card'
  * PluginWidget - Renders a widget from a plugin
  */
 const PluginWidget = ({ widget }) => {
-    const [content, setContent] = useState('');
+    const [content, setContent] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
