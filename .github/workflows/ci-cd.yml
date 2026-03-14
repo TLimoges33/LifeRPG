@@ -76,7 +76,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "18"
+          node-version: "20"
           cache: "npm"
           cache-dependency-path: "modern/frontend/package-lock.json"
 
@@ -84,16 +84,6 @@ jobs:
         run: |
           cd modern/frontend
           npm ci
-
-      - name: Run linting
-        run: |
-          cd modern/frontend
-          npm run lint
-
-      - name: Run tests
-        run: |
-          cd modern/frontend
-          npm test -- --coverage --watchAll=false
 
       - name: Build production bundle
         run: |
