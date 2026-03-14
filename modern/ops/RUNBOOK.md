@@ -17,22 +17,22 @@ Grafana dashboard: `ops/grafana-dashboard.json` (import into Grafana and configu
 - Symptom: `sync_enqueue_skips_total` rate > 0.2 for >10m.
 - Likely causes: provider concurrency cap, duplicate enqueues (guard), or downstream slowness.
 - Actions:
-  - Check `sync_inflight{provider}` vs cap (env `SYNC_MAX_CONCURRENCY_PER_PROVIDER`).
-  - Temporarily raise the cap if safe, or reduce scheduler cadence (`sync_interval_seconds`).
-  - Inspect job logs in Loki for adapter errors or rate limits.
+ - Check `sync_inflight{provider}` vs cap (env `SYNC_MAX_CONCURRENCY_PER_PROVIDER`).
+ - Temporarily raise the cap if safe, or reduce scheduler cadence (`sync_interval_seconds`).
+ - Inspect job logs in Loki for adapter errors or rate limits.
 
 2) Queue depth rising
 - Symptom: `increase(sync_queue_depth[15m]) > 50`.
 - Actions:
-  - Scale workers or increase per-provider cap cautiously.
-  - Pause non-critical providers by increasing intervals.
-  - Check external API health/rate limits.
+ - Scale workers or increase per-provider cap cautiously.
+ - Pause non-critical providers by increasing intervals.
+ - Check external API health/rate limits.
 
 3) Elevated request latency
 - Symptom: p95 > 500ms sustained.
 - Actions:
-  - Inspect recent deployments, DB CPU/IO, and external dependencies.
-  - Enable sampling/profiling; consider caching.
+ - Inspect recent deployments, DB CPU/IO, and external dependencies.
+ - Enable sampling/profiling; consider caching.
 
 ## Configuration
 - Concurrency cap per provider: `SYNC_MAX_CONCURRENCY_PER_PROVIDER` (default 4).
@@ -46,8 +46,8 @@ Grafana dashboard: `ops/grafana-dashboard.json` (import into Grafana and configu
 
 ## Playbooks
 - Raise provider cap:
-  - Set `SYNC_MAX_CONCURRENCY_PER_PROVIDER` and restart worker.
+ - Set `SYNC_MAX_CONCURRENCY_PER_PROVIDER` and restart worker.
 - Slow the scheduler:
-  - PATCH integration config `{"sync_interval_seconds": <value>}` for noisy integrations.
+ - PATCH integration config `{"sync_interval_seconds": <value>}` for noisy integrations.
 - Toggle close policy:
-  - POST `/api/v1/admin/settings` `{ "integration_close_mode": "archive|delete" }`.
+ - POST `/api/v1/admin/settings` `{ "integration_close_mode": "archive|delete" }`.
