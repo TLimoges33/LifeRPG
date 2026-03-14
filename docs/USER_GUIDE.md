@@ -18,9 +18,9 @@ Welcome to LifeRPG! This guide will help you get started with turning your life 
 
 1. **Navigate to LifeRPG**: Open your web browser and go to `http://localhost:5173`
 2. **Register**: Click the "Register" button and fill in your details:
-   - Email address
-   - Password (minimum 8 characters)
-   - Display name (how you'll appear in leaderboards)
+ - Email address
+ - Password (minimum 8 characters)
+ - Display name (how you'll appear in leaderboards)
 3. **Login**: After registration, you'll be automatically logged in
 
 ### Dashboard Overview
@@ -45,13 +45,13 @@ Click on the "Habits" tab in your dashboard navigation.
 
 1. Click the "Add New Habit" button
 2. Fill in the habit details:
-   - **Title**: Give your habit a clear, motivating name (e.g., "Morning Exercise")
-   - **Description**: Add details about what this habit involves
-   - **Category**: Choose from categories like Health, Learning, Productivity, etc.
-   - **Target Frequency**: Select how often you want to do this habit:
-     - Daily: Every day
-     - Weekly: A certain number of times per week
-     - Custom: Set your own schedule
+ - **Title**: Give your habit a clear, motivating name (e.g., "Morning Exercise")
+ - **Description**: Add details about what this habit involves
+ - **Category**: Choose from categories like Health, Learning, Productivity, etc.
+ - **Target Frequency**: Select how often you want to do this habit:
+ - Daily: Every day
+ - Weekly: A certain number of times per week
+ - Custom: Set your own schedule
 
 ### Step 3: Start Tracking
 

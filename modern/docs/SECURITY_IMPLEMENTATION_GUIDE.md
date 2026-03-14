@@ -731,7 +731,7 @@ def check_gdpr_compliance(user_id: str):
 
 ---
 
-**Document Version**: 1.0  
-**Last Updated**: August 30, 2025  
-**Next Review**: November 30, 2025  
+**Document Version**: 1.0 
+**Last Updated**: August 30, 2025 
+**Next Review**: November 30, 2025 
 **Maintained By**: Security Team

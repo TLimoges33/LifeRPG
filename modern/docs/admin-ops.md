@@ -12,9 +12,9 @@ API endpoints (all under /api/v1):
 
 Frontend UI:
 - Integrations page includes:
-  - Provider caps editor (view/edit) and orchestration summary with manual refresh, auto-refresh, sorting, and cap utilization badges.
-  - Hooks editor with example prefill and server-side validation, showing inline errors.
-  - Admin settings controls for integration close mode and default sync interval.
+ - Provider caps editor (view/edit) and orchestration summary with manual refresh, auto-refresh, sorting, and cap utilization badges.
+ - Hooks editor with example prefill and server-side validation, showing inline errors.
+ - Admin settings controls for integration close mode and default sync interval.
 
 Metrics to watch (Prometheus):
 - sync_inflight, sync_queue_depth, sync_provider_cap, rq_queue_length

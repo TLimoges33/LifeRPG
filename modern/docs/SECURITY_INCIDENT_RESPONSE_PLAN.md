@@ -133,22 +133,22 @@ Escalation Matrix: See Appendix A
 
 1. **Alert Reception**
 
-   - Monitor receives security alert
-   - Initial triage and classification
-   - Document incident in tracking system
+ - Monitor receives security alert
+ - Initial triage and classification
+ - Document incident in tracking system
 
 2. **Rapid Assessment**
 
-   - Validate the incident (eliminate false positives)
-   - Determine scope and impact
-   - Classify severity level
-   - Activate appropriate response team
+ - Validate the incident (eliminate false positives)
+ - Determine scope and impact
+ - Classify severity level
+ - Activate appropriate response team
 
 3. **Communication**
-   - Notify Incident Commander
-   - Alert response team members
-   - Initialize incident documentation
-   - Establish communication channels
+ - Notify Incident Commander
+ - Alert response team members
+ - Initialize incident documentation
+ - Establish communication channels
 
 #### Incident Documentation Template
 
@@ -168,31 +168,31 @@ Assigned Team Members: [Names]
 
 - **Isolate Affected Systems**
 
-  - Network segmentation
-  - User account suspension
-  - Service shutdowns if necessary
-  - Database connection limiting
+ - Network segmentation
+ - User account suspension
+ - Service shutdowns if necessary
+ - Database connection limiting
 
 - **Preserve Evidence**
-  - System snapshots
-  - Log file preservation
-  - Memory dumps
-  - Network traffic captures
+ - System snapshots
+ - Log file preservation
+ - Memory dumps
+ - Network traffic captures
 
 #### Long-term Containment
 
 - **Temporary Fixes**
 
-  - Security patches
-  - Configuration changes
-  - Enhanced monitoring
-  - Additional access controls
+ - Security patches
+ - Configuration changes
+ - Enhanced monitoring
+ - Additional access controls
 
 - **Business Continuity**
-  - Alternative service routes
-  - Customer communication
-  - Service degradation management
-  - Stakeholder updates
+ - Alternative service routes
+ - Customer communication
+ - Service degradation management
+ - Stakeholder updates
 
 ### Phase 4: Eradication (2-24 hours)
 

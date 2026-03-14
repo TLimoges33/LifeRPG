@@ -175,9 +175,9 @@ Traditional habit trackers are boring, static, and don't adapt to your behavior.
    ```
 
 5. **Access the Application**
-   - **Frontend**: http://localhost:3000
-   - **API Docs**: http://localhost:8000/docs
-   - **Health Check**: http://localhost:8000/health
+ - **Frontend**: http://localhost:3000
+ - **API Docs**: http://localhost:8000/docs
+ - **Health Check**: http://localhost:8000/health
 
 ### **First Steps**
 

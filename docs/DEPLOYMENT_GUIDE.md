@@ -410,9 +410,9 @@ echo "Backup completed: $DATE"
    ```
 
 3. **AI Model Optimization**
-   - Pre-load models on startup
-   - Implement model caching
-   - Use quantized models for lower memory usage
+ - Pre-load models on startup
+ - Implement model caching
+ - Use quantized models for lower memory usage
 
 ### Frontend Optimization
 

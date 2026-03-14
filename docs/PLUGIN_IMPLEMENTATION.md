@@ -11,35 +11,35 @@ The LifeRPG plugin system enables users and developers to extend the functionali
 ### Backend Components
 
 1. **Plugin Registry and Management**
-   - `/workspaces/LifeRPG/modern/backend/plugins.py`: Core plugin system backend with database models, API endpoints, and plugin management logic
-   - Database models for storing plugin metadata
-   - API endpoints for plugin CRUD operations
+ - `/workspaces/LifeRPG/modern/backend/plugins.py`: Core plugin system backend with database models, API endpoints, and plugin management logic
+ - Database models for storing plugin metadata
+ - API endpoints for plugin CRUD operations
 
 2. **Plugin API Integration**
-   - Added plugin system initialization to both `app.py` and `demo_app.py`
-   - Defined permission system for controlled API access
+ - Added plugin system initialization to both `app.py` and `demo_app.py`
+ - Defined permission system for controlled API access
 
 ### Frontend Components
 
 1. **Plugin Manager**
-   - `/workspaces/LifeRPG/modern/frontend/src/plugins/PluginManager.tsx`: React hook for managing plugins on the frontend
-   - Logic for loading and executing WASM plugins
-   - Plugin lifecycle management
+ - `/workspaces/LifeRPG/modern/frontend/src/plugins/PluginManager.tsx`: React hook for managing plugins on the frontend
+ - Logic for loading and executing WASM plugins
+ - Plugin lifecycle management
 
 2. **Plugin Admin UI**
-   - `/workspaces/LifeRPG/modern/frontend/src/plugins/PluginAdmin.tsx`: User interface for managing plugins
-   - Installation, enabling/disabling, and uninstallation of plugins
+ - `/workspaces/LifeRPG/modern/frontend/src/plugins/PluginAdmin.tsx`: User interface for managing plugins
+ - Installation, enabling/disabling, and uninstallation of plugins
 
 ### Plugin SDK
 
 1. **AssemblyScript SDK**
-   - `/workspaces/LifeRPG/modern/plugin-sdk/`: SDK for plugin developers
-   - Type definitions and API wrappers for AssemblyScript
-   - Documentation and examples
+ - `/workspaces/LifeRPG/modern/plugin-sdk/`: SDK for plugin developers
+ - Type definitions and API wrappers for AssemblyScript
+ - Documentation and examples
 
 2. **Example Plugins**
-   - `/workspaces/LifeRPG/modern/plugin-examples/pomodoro/`: Example Pomodoro timer plugin
-   - Demonstrates dashboard widget integration
+ - `/workspaces/LifeRPG/modern/plugin-examples/pomodoro/`: Example Pomodoro timer plugin
+ - Demonstrates dashboard widget integration
 
 ## Implementation Details
 
