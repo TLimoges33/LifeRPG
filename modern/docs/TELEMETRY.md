@@ -17,20 +17,20 @@ LifeRPG includes an optional telemetry system designed to help improve the appli
 ### Backend Components
 
 1. **`telemetry.py`** - Core telemetry engine
-   - Consent management
-   - Event recording and sanitization
-   - Pre-defined event helpers
-   - Analytics aggregation
+ - Consent management
+ - Event recording and sanitization
+ - Pre-defined event helpers
+ - Analytics aggregation
 
 2. **Database Models**
-   - `TelemetryEvent` - Stores anonymous event data
-   - `Profile` - Stores user consent preferences
+ - `TelemetryEvent` - Stores anonymous event data
+ - `Profile` - Stores user consent preferences
 
 3. **API Endpoints**
-   - `POST /api/v1/telemetry/consent` - Set user consent
-   - `GET /api/v1/telemetry/consent` - Get consent status
-   - `POST /api/v1/telemetry/event` - Record custom events
-   - `GET /api/v1/admin/telemetry/stats` - Admin analytics
+ - `POST /api/v1/telemetry/consent` - Set user consent
+ - `GET /api/v1/telemetry/consent` - Get consent status
+ - `POST /api/v1/telemetry/event` - Record custom events
+ - `GET /api/v1/admin/telemetry/stats` - Admin analytics
 
 ### Frontend Components
 
@@ -177,19 +177,19 @@ Administrators can view:
 ### Common Issues
 
 1. **Telemetry not recording**
-   - Check `TELEMETRY_ENABLED` environment variable
-   - Verify user has given consent
-   - Check database connectivity
+ - Check `TELEMETRY_ENABLED` environment variable
+ - Verify user has given consent
+ - Check database connectivity
 
 2. **Admin dashboard empty**
-   - Verify admin role permissions
-   - Check if telemetry is globally enabled
-   - Ensure events are being recorded
+ - Verify admin role permissions
+ - Check if telemetry is globally enabled
+ - Ensure events are being recorded
 
 3. **Consent not saving**
-   - Check authentication token
-   - Verify database write permissions
-   - Check API endpoint configuration
+ - Check authentication token
+ - Verify database write permissions
+ - Check API endpoint configuration
 
 ## Future Enhancements
 

@@ -47,20 +47,20 @@ Key threats addressed:
 LifeRPG supports multiple secure authentication methods:
 
 1. **OAuth2/OIDC**: Integration with identity providers using PKCE
-   - Google, GitHub, Microsoft, etc.
-   - Authorization code flow with PKCE for SPAs and mobile
-   - Optional audience and issuer validation
-   - RP-initiated logout support
+ - Google, GitHub, Microsoft, etc.
+ - Authorization code flow with PKCE for SPAs and mobile
+ - Optional audience and issuer validation
+ - RP-initiated logout support
 
 2. **Two-Factor Authentication (2FA)**
-   - TOTP (Time-based One-Time Password)
-   - Recovery codes for backup access
-   - Session management with primary/alt sessions
+ - TOTP (Time-based One-Time Password)
+ - Recovery codes for backup access
+ - Session management with primary/alt sessions
 
 3. **API Tokens**
-   - Fine-grained permissions
-   - Expiring tokens with rotation
-   - Token revocation support
+ - Fine-grained permissions
+ - Expiring tokens with rotation
+ - Token revocation support
 
 ### Token Security
 
@@ -275,13 +275,13 @@ LifeRPG offers a bug bounty program with:
 ### Automated Testing
 
 - **SAST (Static Application Security Testing)**: Analyzes code for security issues
-  - Tools: Bandit, ESLint security plugins, CodeQL
+ - Tools: Bandit, ESLint security plugins, CodeQL
 - **DAST (Dynamic Application Security Testing)**: Tests running application
-  - Tools: OWASP ZAP, Burp Suite
+ - Tools: OWASP ZAP, Burp Suite
 - **Dependency Scanning**: Checks dependencies for vulnerabilities
-  - Tools: Dependabot, Snyk, OWASP Dependency Check
+ - Tools: Dependabot, Snyk, OWASP Dependency Check
 - **Container Scanning**: Analyzes container images
-  - Tools: Trivy, Clair
+ - Tools: Trivy, Clair
 
 ### Manual Testing
 

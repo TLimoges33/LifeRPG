@@ -7,8 +7,8 @@ How to test Google OAuth locally:
 - Set Authorized redirect URI to: http://localhost:8000/api/v1/oauth/google/callback
 - Copy credentials into `.env` or environment and start the backend:
 
-  export GOOGLE_CLIENT_ID=...\n  export GOOGLE_CLIENT_SECRET=...\n  export BASE_URL=http://localhost:8000
-  uvicorn modern.backend.app:app --reload --port 8000
+ export GOOGLE_CLIENT_ID=...\n export GOOGLE_CLIENT_SECRET=...\n export BASE_URL=http://localhost:8000
+ uvicorn modern.backend.app:app --reload --port 8000
 
 - Visit: http://localhost:8000/api/v1/oauth/google/login
 

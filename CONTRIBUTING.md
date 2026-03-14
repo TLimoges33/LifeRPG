@@ -167,31 +167,31 @@ export const HabitCard: React.FC<HabitCardProps> = ({ habit, onComplete }) => {
 
 ## Types of Contributions
 
-### 🐛 Bug Reports
+### Bug Reports
 - Use the bug report template
 - Include steps to reproduce
 - Provide error messages and logs
 - Test with the latest version
 
-### ✨ Feature Requests
+### Feature Requests
 - Use the feature request template
 - Explain the use case clearly
 - Consider backward compatibility
 - Discuss implementation approach
 
-### 📝 Documentation
+### Documentation
 - Fix typos and unclear explanations
 - Add examples and use cases
 - Update outdated information
 - Improve API documentation
 
-### 🧪 Testing
+### Testing
 - Add unit tests for new features
 - Improve test coverage
 - Add integration tests
 - Performance testing
 
-### 🎨 Design & UX
+### Design & UX
 - Improve accessibility
 - Enhance user experience
 - Create design mockups
@@ -219,4 +219,4 @@ Contributors are recognized in:
 - **GitHub Contributors** graph
 - Annual contributor highlights
 
-Thank you for helping make LifeRPG better! 🎮✨
+Thank you for helping make LifeRPG better!

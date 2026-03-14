@@ -1,16 +1,16 @@
-# 🎓 **FREE & CHEAP HOSTING GUIDE FOR COLLEGE STUDENTS**
+# **FREE & CHEAP HOSTING GUIDE FOR COLLEGE STUDENTS**
 
-## 🌟 **Overview**
+## **Overview**
 
 As a college student, you can host LifeRPG for **FREE or under $5/month** using various platforms and student discounts. Here's your complete guide to getting LifeRPG online without breaking the bank!
 
 ---
 
-## 🎯 **Best Free Hosting Options (Recommended)**
+## **Best Free Hosting Options (Recommended)**
 
 ### **1. Vercel (Frontend) + Railway (Backend) - 100% FREE**
 
-#### **✅ Why This Combo:**
+#### ** Why This Combo:**
 
 - **Cost**: $0/month forever
 - **Performance**: Production-grade performance
@@ -34,11 +34,11 @@ vercel --prod
 
 **Features:**
 
-- ✅ Automatic HTTPS
-- ✅ Global CDN
-- ✅ Git integration
-- ✅ Custom domains
-- ✅ 100GB bandwidth/month
+- Automatic HTTPS
+- Global CDN
+- Git integration
+- Custom domains
+- 100GB bandwidth/month
 
 #### **Railway Setup (Backend + Database):**
 
@@ -60,14 +60,14 @@ vercel --prod
 
 **Railway Free Tier:**
 
-- ✅ $5 credit/month (covers small apps)
-- ✅ PostgreSQL database included
-- ✅ Automatic deployments
-- ✅ Built-in monitoring
+- $5 credit/month (covers small apps)
+- PostgreSQL database included
+- Automatic deployments
+- Built-in monitoring
 
 ### **2. Render (All-in-One) - FREE**
 
-#### **✅ Why Choose Render:**
+#### ** Why Choose Render:**
 
 - **Cost**: $0/month for basic tier
 - **Simplicity**: Single platform for everything
@@ -78,23 +78,23 @@ vercel --prod
 1. **Fork your GitHub repo**
 2. **Connect Render to GitHub**
 3. **Create Web Service** (Backend):
-   - Build Command: `pip install -r requirements.txt && python setup_ai.py`
-   - Start Command: `uvicorn app:app --host 0.0.0.0 --port $PORT`
+ - Build Command: `pip install -r requirements.txt && python setup_ai.py`
+ - Start Command: `uvicorn app:app --host 0.0.0.0 --port $PORT`
 4. **Create Static Site** (Frontend):
-   - Build Command: `npm install && npm run build`
-   - Publish Directory: `build`
+ - Build Command: `npm install && npm run build`
+ - Publish Directory: `build`
 5. **Create PostgreSQL Database** (Free tier available)
 
 **Render Free Tier:**
 
-- ✅ Web services sleep after 15min inactivity
-- ✅ 750 hours/month (enough for personal use)
-- ✅ Custom domains
-- ✅ Automatic SSL
+- Web services sleep after 15min inactivity
+- 750 hours/month (enough for personal use)
+- Custom domains
+- Automatic SSL
 
 ---
 
-## 🎓 **Student Discount Options**
+## **Student Discount Options**
 
 ### **1. GitHub Student Developer Pack**
 
@@ -159,7 +159,7 @@ databases:
 
 ---
 
-## 💡 **Ultra-Cheap Options ($3-5/month)**
+## **Ultra-Cheap Options ($3-5/month)**
 
 ### **1. Hetzner Cloud (Germany) - $3.79/month**
 
@@ -233,7 +233,7 @@ volumes:
 
 ---
 
-## 🛠️ **Production-Ready Budget Setup ($5-10/month)**
+## **Production-Ready Budget Setup ($5-10/month)**
 
 ### **Recommended Stack:**
 
@@ -247,17 +247,17 @@ volumes:
 
 #### **Why This Setup:**
 
-- ✅ Handles 10,000+ users
-- ✅ AI models run smoothly with 8GB RAM
-- ✅ Professional custom domain
-- ✅ Global CDN performance
-- ✅ Automatic backups
+- Handles 10,000+ users
+- AI models run smoothly with 8GB RAM
+- Professional custom domain
+- Global CDN performance
+- Automatic backups
 
 ---
 
-## 🎯 **My Top Recommendation for Students**
+## **My Top Recommendation for Students**
 
-### **🥇 Best Overall: Vercel + Railway (FREE)**
+### ** Best Overall: Vercel + Railway (FREE)**
 
 #### **Why I Recommend This:**
 
@@ -291,7 +291,7 @@ vercel --prod
 # Backend: DATABASE_URL=your-railway-postgres-url
 ```
 
-### **🥈 Best for Learning: DigitalOcean + Student Pack**
+### ** Best for Learning: DigitalOcean + Student Pack**
 
 #### **Advantages:**
 
@@ -302,19 +302,19 @@ vercel --prod
 
 ---
 
-## 📊 **Cost Comparison Table**
+## **Cost Comparison Table**
 
-| Platform         | Monthly Cost | RAM   | Database      | SSL | Custom Domain | Best For     |
+| Platform | Monthly Cost | RAM | Database | SSL | Custom Domain | Best For |
 | ---------------- | ------------ | ----- | ------------- | --- | ------------- | ------------ |
-| Vercel + Railway | $0           | 512MB | ✅ PostgreSQL | ✅  | ✅            | Students     |
-| Render           | $0           | 512MB | ✅ PostgreSQL | ✅  | ✅            | Simplicity   |
-| Oracle Free      | $0           | 24GB  | Self-hosted   | ✅  | ✅            | Learning     |
-| Hetzner CX11     | $3.79        | 4GB   | Self-hosted   | ✅  | Extra cost    | Budget       |
-| DigitalOcean     | $6           | 1GB   | Extra $15     | ✅  | ✅            | Professional |
+| Vercel + Railway | $0 | 512MB | PostgreSQL | | | Students |
+| Render | $0 | 512MB | PostgreSQL | | | Simplicity |
+| Oracle Free | $0 | 24GB | Self-hosted | | | Learning |
+| Hetzner CX11 | $3.79 | 4GB | Self-hosted | | Extra cost | Budget |
+| DigitalOcean | $6 | 1GB | Extra $15 | | | Professional |
 
 ---
 
-## 🔧 **Deployment Configuration**
+## **Deployment Configuration**
 
 ### **Environment Variables You'll Need:**
 
@@ -352,7 +352,7 @@ npm run build
 
 ---
 
-## 🚀 **Going Live Checklist**
+## **Going Live Checklist**
 
 ### **Pre-Launch:**
 
@@ -381,7 +381,7 @@ npm run build
 
 ---
 
-## 🎓 **Student Success Tips**
+## **Student Success Tips**
 
 ### **1. Start with Free Tiers**
 
@@ -405,14 +405,14 @@ A deployed AI application is impressive on resumes. Document the architecture, c
 
 ---
 
-## 🎯 **Next Steps**
+## **Next Steps**
 
 1. **Choose your platform** (I recommend Vercel + Railway)
 2. **Set up your deployment** following the guides above
 3. **Configure your domain** (optional but professional)
 4. **Test everything thoroughly**
-5. **Share your success** 🎉
+5. **Share your success** 
 
 **Remember**: The goal isn't just to host your app—it's to learn valuable skills that will help in your career. Every deployment challenge you overcome makes you a better developer!
 
-**You've got this! 🚀**
+**You've got this! **

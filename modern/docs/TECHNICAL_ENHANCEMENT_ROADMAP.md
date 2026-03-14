@@ -1,4 +1,4 @@
-# 🔧 LifeRPG Technical Enhancement Roadmap
+# LifeRPG Technical Enhancement Roadmap
 
 ## Immediate Technical Improvements (Next Week)
 

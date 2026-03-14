@@ -208,12 +208,22 @@ const MobileHabitTracker = ({ userId, isMobile = false }) => {
     const celebration = document.createElement("div");
     celebration.className =
       "fixed inset-0 flex items-center justify-center z-50 pointer-events-none";
-    celebration.innerHTML = `
-            <div class="bg-gradient-to-r from-yellow-400 to-orange-500 text-white rounded-full p-8 animate-bounce shadow-2xl">
-                <div class="text-4xl">🔥</div>
-                <div class="text-xl font-bold mt-2">${milestone} Day Streak!</div>
-            </div>
-        `;
+
+    const inner = document.createElement("div");
+    inner.className =
+      "bg-gradient-to-r from-yellow-400 to-orange-500 text-white rounded-full p-8 animate-bounce shadow-2xl";
+
+    const emoji = document.createElement("div");
+    emoji.className = "text-4xl";
+    emoji.textContent = "\uD83D\uDD25";
+
+    const text = document.createElement("div");
+    text.className = "text-xl font-bold mt-2";
+    text.textContent = `${milestone} Day Streak!`;
+
+    inner.appendChild(emoji);
+    inner.appendChild(text);
+    celebration.appendChild(inner);
 
     document.body.appendChild(celebration);
 

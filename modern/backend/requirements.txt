@@ -5,6 +5,7 @@ sqlalchemy
 alembic
 psycopg2-binary
 pydantic
+email-validator
 redis
 rq
 prometheus-client
@@ -16,3 +17,4 @@ python-multipart
 cryptography
 requests
 pillow
+PyJWT

@@ -4,25 +4,25 @@ A React Native mobile application for the LifeRPG habit tracking and gamificatio
 
 ## Features
 
-### 🎮 Gamification
+### Gamification
 - **Experience Points (XP)**: Earn XP for completing habits
 - **Leveling System**: Progress through levels as you build consistency
 - **Achievements**: Unlock badges and achievements for milestones
 - **Streaks**: Track and maintain daily habit streaks
 
-### ✅ Habit Management
+### Habit Management
 - **Custom Habits**: Create personalized habits with categories
 - **Quick Templates**: Get started with popular habit templates
 - **Smart Tracking**: Mark habits complete with a single tap
 - **Rich Analytics**: View detailed progress and performance metrics
 
-### 📊 Analytics & Insights
+### Analytics & Insights
 - **Progress Charts**: Visual representation of your habit completion
 - **Streak Tracking**: Monitor your consistency over time
 - **Category Analysis**: See which areas of your life are improving
 - **Success Rates**: Track completion percentages
 
-### 🔄 Offline-First Sync
+### Offline-First Sync
 - **Work Offline**: Full functionality without internet connection
 - **Auto-Sync**: Automatic synchronization when online
 - **Conflict Resolution**: Smart handling of sync conflicts

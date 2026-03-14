@@ -69,10 +69,10 @@ jobs:
         ports:
           - 5432:5432
         options: >-
-          --health-cmd="bash -lc 'cat < /dev/null > /dev/tcp/127.0.0.1/5432'" \
-          --health-interval=10s \
-          --health-timeout=5s \
-          --health-retries=10
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -97,18 +97,12 @@ jobs:
           python -m pip install -r modern/backend/requirements_full.txt alembic
       - name: Wait for Postgres
         run: |
-          python - <<'PY'
-          import socket, time, sys
-          host, port = '127.0.0.1', 5432
-          for i in range(60):
-              try:
-                  with socket.create_connection((host, port), timeout=1):
-                      sys.exit(0)
-              except OSError:
-                  time.sleep(1)
-          print('Postgres not ready', file=sys.stderr)
-          sys.exit(1)
-          PY
+          for i in $(seq 1 30); do
+            pg_isready -h 127.0.0.1 -p 5432 -U postgres && exit 0
+            sleep 2
+          done
+          echo "Postgres not ready after 60s" >&2
+          exit 1
       - name: Stamp postgres
         env:
           DATABASE_URL: postgresql+psycopg2://postgres:postgres@localhost:5432/liferpg
@@ -196,7 +190,7 @@ jobs:
           path: |
             **/__pycache__
           key: ${{ runner.os }}-pyc-${{ github.sha }}
-  - name: Install deps
+      - name: Install deps
         run: |
           python -m pip install --upgrade pip
           python -m pip install -r modern/backend/requirements_full.txt alembic
@@ -223,10 +217,10 @@ jobs:
         ports:
           - 5432:5432
         options: >-
-          --health-cmd="bash -lc 'cat < /dev/null > /dev/tcp/127.0.0.1/5432'" \
-          --health-interval=10s \
-          --health-timeout=5s \
-          --health-retries=10
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -251,18 +245,12 @@ jobs:
           python -m pip install -r modern/backend/requirements_full.txt uvicorn alembic
       - name: Wait for Postgres
         run: |
-          python - <<'PY'
-          import socket, time, sys
-          host, port = '127.0.0.1', 5432
-          for i in range(60):
-              try:
-                  with socket.create_connection((host, port), timeout=1):
-                      sys.exit(0)
-              except OSError:
-                  time.sleep(1)
-          print('Postgres not ready', file=sys.stderr)
-          sys.exit(1)
-          PY
+          for i in $(seq 1 30); do
+            pg_isready -h 127.0.0.1 -p 5432 -U postgres && exit 0
+            sleep 2
+          done
+          echo "Postgres not ready after 60s" >&2
+          exit 1
       - name: Upgrade DB (postgres)
         env:
           DATABASE_URL: postgresql+psycopg2://postgres:postgres@localhost:5432/liferpg

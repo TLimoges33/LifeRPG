@@ -65,7 +65,7 @@ export const NotificationSystem: React.FC<NotificationSystemProps> = ({
 
   const addNotification = useCallback(
     (notification: Omit<NotificationData, "id">) => {
-      const id = `notification-${Date.now()}-${Math.random()}`;
+      const id = `notification-${Date.now()}-${crypto.randomUUID()}`;
       const newNotification: NotificationData = {
         ...notification,
         id,
