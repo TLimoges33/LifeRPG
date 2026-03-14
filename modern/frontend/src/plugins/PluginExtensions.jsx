@@ -19,20 +19,12 @@ const PluginWidget = ({ widget }) => {
             setError(null);
 
             // In a real implementation, this would call the plugin's render function
-            // For now, we'll just show the widget configuration
-            const mockContent = `
-        <div class="p-4">
-          <h3 class="text-lg font-semibold">${widget.config.title || 'Plugin Widget'}</h3>
-          <p class="text-gray-600">Plugin ID: ${widget.plugin_id}</p>
-          <p class="text-gray-600">Widget ID: ${widget.id}</p>
-          <div class="mt-4">
-            <p>This is a placeholder for plugin-rendered content.</p>
-            <p>In a real implementation, the plugin's WASM code would generate this content.</p>
-          </div>
-        </div>
-      `;
-
-            setContent(mockContent);
+            // For now, we'll just show the widget configuration as structured data
+            setContent({
+                title: widget.config.title || 'Plugin Widget',
+                pluginId: widget.plugin_id,
+                widgetId: widget.id,
+            });
         } catch (err) {
             setError(err.message);
         } finally {
@@ -68,7 +60,15 @@ const PluginWidget = ({ widget }) => {
 
     return (
         <Card>
-            <div dangerouslySetInnerHTML={{ __html: content }} />
+            <div className="p-4">
+                <h3 className="text-lg font-semibold">{content.title}</h3>
+                <p className="text-gray-600">Plugin ID: {content.pluginId}</p>
+                <p className="text-gray-600">Widget ID: {content.widgetId}</p>
+                <div className="mt-4">
+                    <p>This is a placeholder for plugin-rendered content.</p>
+                    <p>In a real implementation, the plugin's WASM code would generate this content.</p>
+                </div>
+            </div>
         </Card>
     );
 };
