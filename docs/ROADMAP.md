@@ -79,15 +79,15 @@ Milestone 5 — Mobile & offline (P2, M)
     - [x] Background sync with intelligent scheduling and error handling
 - Success criteria: Full-featured mobile app with robust offline capabilities and seamless sync.
 
-Milestone 6 — Gamification & analytics (P1, M) ✅ COMPLETED
+Milestone 6 — Gamification & analytics (P1, M) (Done) COMPLETED
 - Goal: Rebuild gamification engine and analytics dashboard.
 - Tasks:
-  - [x] Implement XP/levels, achievements, streaks model — Effort: S ✅ 
-  - [x] Add analytics endpoints and frontend charts (heatmap, time series) — Effort: M ✅
-  - [x] Add opt-in anonymized telemetry — Effort: S ✅
-- Success criteria: visible progress UI and charts in frontend. ✅ ACHIEVED
+  - [x] Implement XP/levels, achievements, streaks model — Effort: S (Done)
+  - [x] Add analytics endpoints and frontend charts (heatmap, time series) — Effort: M (Done)
+  - [x] Add opt-in anonymized telemetry — Effort: S (Done)
+- Success criteria: visible progress UI and charts in frontend. (Done) ACHIEVED
 
-Milestone 7 — Extensibility and portfolio polish (P1, M → L) ✅ COMPLETED
+Milestone 7 — Extensibility and portfolio polish (P1, M → L) (Done) COMPLETED
 - Goal: Plugins, documentation, security portfolio artifacts.
 - Tasks:
   - [x] Add plugin system (sandbox with WASM or Lua) — Effort: L
@@ -274,8 +274,8 @@ How I verified recent work:
 
 **CURRENT STATUS (August 30, 2025):**
 
-✅ **MILESTONE 6 COMPLETED**: Full gamification and analytics system implemented and tested
-✅ **MILESTONE 7 COMPLETED**: Plugin system, comprehensive documentation, and security infrastructure
+(Done) **MILESTONE 6 COMPLETED**: Full gamification and analytics system implemented and tested
+(Done) **MILESTONE 7 COMPLETED**: Plugin system, comprehensive documentation, and security infrastructure
 
 **Technical Achievements:**
 - Backend: 25+ API endpoints including full plugin management system
@@ -285,11 +285,11 @@ How I verified recent work:
 - Security: Automated CI/CD security scans, SBOM generation, vulnerability reporting
 - Database: Extended SQLite schema with plugin metadata and permission system
 
-🔄 **SERVERS RUNNING**:
+**SERVERS RUNNING**:
 - Backend: http://localhost:8000 (FastAPI with Swagger docs at /docs)
 - Frontend: http://localhost:5173 (React with TailwindCSS v4)
 
-✅ **VERIFIED FUNCTIONALITY**:
+(Done) **VERIFIED FUNCTIONALITY**:
 - User authentication system
 - Habit creation and completion (API tested: habit created with ID 1, completed successfully)
 - XP and achievement system (60 XP earned, "First Steps" achievement unlocked)
@@ -297,7 +297,7 @@ How I verified recent work:
 - Full UI component library working
 - Plugin system infrastructure ready for plugin development
 
-🎯 **READY FOR**: Plugin development, production deployment, security audits, and public release
+ **READY FOR**: Plugin development, production deployment, security audits, and public release
 
 The LifeRPG modernization has achieved a production-ready application with complete gamification, analytics, telemetry, and extensible plugin systems!
 

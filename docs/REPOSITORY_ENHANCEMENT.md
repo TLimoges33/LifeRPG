@@ -139,7 +139,7 @@ Perfect for portfolios and real-world use.
 
 ```markdown
 <div align="center">
-  
+
 # 🎮 LifeRPG
 ## Gamify Your Life with AI-Powered Habit Tracking
 
@@ -225,15 +225,15 @@ Perfect for portfolios and real-world use.
 ```
 
 LifeRPG/
-├── 🎯 modern/
-│ ├── 🖥️ frontend/ # React + TypeScript PWA
-│ ├── ⚡ backend/ # FastAPI + AI Services  
-│ └── 📱 mobile/ # React Native (Future)
-├── 📚 docs/ # Comprehensive Documentation
-├── 🧪 tests/ # Test Suites
-├── 🚀 scripts/ # Automation Scripts
-├── 🐳 docker/ # Container Configurations
-└── 📊 monitoring/ # Health & Performance
+├── modern/
+│ ├── frontend/ # React + TypeScript PWA
+│ ├── backend/ # FastAPI + AI Services
+│ └── mobile/ # React Native (Future)
+├── docs/ # Comprehensive Documentation
+├── tests/ # Test Suites
+├── scripts/ # Automation Scripts
+├── docker/ # Container Configurations
+└── monitoring/ # Health & Performance
 
 ```
 
@@ -256,18 +256,18 @@ cd LifeRPG
 
 ### For Users
 
-🌐 **Try it now**: [liferpg.vercel.app](https://liferpg.vercel.app)
-📱 **Install as PWA**: Click "Add to Home Screen" in your browser
+ **Try it now**: [liferpg.vercel.app](https://liferpg.vercel.app)
+ **Install as PWA**: Click "Add to Home Screen" in your browser
 
-## 🎓 Perfect for Students
+## Perfect for Students
 
-- ✅ **Free Hosting**: Deploy on Vercel + Railway free tiers
-- ✅ **Zero AI Costs**: Local processing with HuggingFace
-- ✅ **Portfolio Ready**: Professional code quality
-- ✅ **Learning Resource**: Modern development practices
-- ✅ **Extensible**: Easy to customize and extend
+- **Free Hosting**: Deploy on Vercel + Railway free tiers
+- **Zero AI Costs**: Local processing with HuggingFace
+- **Portfolio Ready**: Professional code quality
+- **Learning Resource**: Modern development practices
+- **Extensible**: Easy to customize and extend
 
-## 🤝 Contributing
+## Contributing
 
 We love contributions! See our [Contributing Guide](CONTRIBUTING.md) for details.
 
